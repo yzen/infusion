@@ -1,0 +1,184 @@
+/*
+Generic containers for columns and layouts
+=============================================
+ */
+/* Container alignment */
+.fl-force-right {float:right; display:inline;} /* IE 6 needs inline display to prevent double margin bug (other browsers ignore it) */
+.fl-force-left {float:left; display:inline;} /* IE 6 needs inline display to prevent double margin bug (other browsers ignore it) */
+.fl-centered {margin-left:auto; margin-right:auto;}
+
+/* Generic container, proxy for other container effects */
+.fl-fix {overflow: auto; zoom:1;}
+.fl-container {}
+/* Fixed width containers */
+.fl-container-100 {width: 100px; overflow: auto;}
+.fl-container-150 {width: 150px; overflow: auto;}
+.fl-container-200 {width: 200px; overflow: auto;}
+.fl-container-250 {width: 250px; overflow: auto;}
+.fl-container-300 {width: 300px; overflow: auto;}
+.fl-container-400 {width: 400px; overflow: auto;}
+.fl-container-750 {width: 750px; overflow: auto;}
+.fl-container-950 {width: 950px; overflow: auto;}
+
+/* Flex width containers */
+.fl-container-auto {width: auto; overflow: auto;}
+.fl-container-flex {width: 100%; overflow: auto; clear:both;}
+.fl-container-flex25 {width: 25%; overflow: auto;}
+.fl-container-flex30 {width: 30%; overflow: auto;}
+.fl-container-flex33 {width: 33%; overflow: auto;}
+.fl-container-flex50 {width: 50%; overflow: auto;}
+
+/* linearizable containers & columns */
+.fl-layout-linear *,
+.fl-layout-linear .fl-linearEnabled {
+    overflow:visible !important; 
+    clear: both !important; 
+    float:none !important;
+    position:relative !important; 
+    margin-left:0 !important;  
+    margin-right:0 !important;
+    top:0 !important; 
+    left:0 !important;
+}
+.fl-layout-linear .fl-container,
+.fl-layout-linear .fl-container-100,
+.fl-layout-linear .fl-container-150,
+.fl-layout-linear .fl-container-200,
+.fl-layout-linear .fl-container-250,
+.fl-layout-linear .fl-container-300,
+.fl-layout-linear .fl-container-400,
+.fl-layout-linear .fl-container-750,
+.fl-layout-linear .fl-container-950,
+.fl-layout-linear .fl-container-auto, 
+.fl-layout-linear .fl-container-flex25, 
+.fl-layout-linear .fl-container-flex30, 
+.fl-layout-linear .fl-container-flex33, 
+.fl-layout-linear .fl-container-flex50 {width:100% !important; margin:auto;}
+.fl-layout-linear .fl-force-left, 
+.fl-layout-linear .fl-force-right,
+.fl-layout-linear li {display:block !important; float:none !important;}
+.fl-layout-linear .fl-linearEnabled {width:100% !important; position:relative;} /* linearization opt in for special cases */
+
+/*
+Layout Helpers
+=============================================
+*/
+/*
+ * Columns: A quick column grid system
+ */
+/* Flex width columns (containers with margins and padding) */
+/* magic derivative is 30: every size should be base 30, to perfectly fit up to 5 columns evenly */
+.fl-col {float:left; display:inline; overflow:auto; text-align:justify;}
+.fl-col-flex5 .fl-col {width:19%; margin:0 0.25%; padding:0 0.25%}
+.fl-col-flex4 .fl-col {width:24%; margin:0 0.25%; padding:0 0.25%}
+.fl-col-flex3 .fl-col {width:32%; margin:0 0.25%; padding:0 0.25%}
+.fl-col-flex2 .fl-col {width:49%; margin:0 0.25%; padding:0 0.25%}
+
+/* CHANGE TO LAYOUT not COL since this will become a layout helper */
+.fl-col-mixed,
+.fl-col-mixed2,
+.fl-col-mixed3 {overflow:auto; zoom:1;}
+
+.fl-col-mixed .fl-col-side {width:200px;}
+.fl-col-mixed .fl-col-side, 
+.fl-col-mixed .fl-col-main {padding:0 10px;}
+
+.fl-col-mixed2 .fl-col-side {width:200px; padding:0 10px;}
+.fl-col-mixed2 .fl-col-main {margin-left:230px; padding:0 10px;} /* margin goes on whichever side the fixed column goes */
+
+.fl-col-mixed3 .fl-col-main {margin:0 230px;} /* margin goes on whichever side the fixed column goes */
+
+
+
+/*
+ * Tabs: a quick tab system
+ * Dependency: list-based markup ?
+ */
+.fl-tabs-center {text-align:center;}
+.fl-tabs-left {text-align:left; padding-left:10px;}
+.fl-tabs-right {text-align:right; padding-right:15px;}
+.fl-tabs {margin:5px 0 0px; border-bottom: 1px solid}
+.fl-tabs .fl-activeTab {}
+.fl-tabs li {border:1px solid; list-style-type:none; padding:3px 8px; text-align:center; margin-bottom:-1px; margin-right:-5px; cursor:pointer;}
+.fl-tabs li, x:-moz-any-link {display:-moz-inline-box;} /* FF2 inline-block workaround */
+.fl-tabs li {display:inline-block;} /* FF3, Opera, Safari, Chrome */
+.fl-tabs li, x:-moz-any-link, x:default {display:inline-block;}  /* reset for FF 3*/
+.fl-tabs li {*display:inline;} /* IE only selector */
+.fl-tabs .orderable-drop-marker {width:0.5em; height:1.5em; padding-left:0.2em; padding-right:0.2em; margin:0;}
+/*
+ * Menus: a quick menu
+ * Dependency: list-based markup ?
+ */
+.fl-listmenu {padding:0px;}
+.fl-listmenu li {margin:0; padding:0; list-style-type:none;}
+.fl-listmenu a {padding:5px 5px; display:block; zoom:1;} /* list item needs layout (http://www.brunildo.org/test/IEWlispace.php) */
+
+/*
+ * Picture Grid: a quick picture grid layout
+ * Dependency: list-based markup ?
+ */
+.fl-grid {padding:2px;}
+.fl-grid li {list-style-type:none; display:inline;}
+.fl-grid li {float:left; width:18%; margin:2px; height:150px; overflow:hidden; position:relative; display:inline;}
+.fl-grid li img {display:block; margin:0 auto;}
+.fl-grid li .caption {position:absolute; left:0px; bottom:0px; width:100%; text-align:center; height:1em; padding:3px 0;}
+
+/*
+ * Buttons: quick sliding door buttons
+ * requires a container with a sub container
+ */
+
+.fl-button-left {float:left; margin-right:10px; padding:0px 0 0px 25px; background-position:left top; background-repeat:no-repeat;}
+.fl-button-left * {float:left; padding: 6px 8px 6px 0; cursor:pointer; background-position:left top; background-repeat:no-repeat;}
+.fl-button-right {float:right;  margin-left:10px; padding:0px 0 0px 25px; background-position:left top; background-repeat:no-repeat;}
+.fl-button-right * {float:left; padding: 6px 8px 6px 0; cursor:pointer; background-position:left top; background-repeat:no-repeat;}
+
+/*
+ * Widgets: modelled after the mycamtools widget model
+ */
+.fl-widget {padding:5px; margin-bottom:10px;}
+.fl-widget .button {margin:0 5px;}
+.fl-widget .fl-widget-titlebar {} /* fixes layout problem in IE6 due to .column {position:relative} setup*/
+.fl-widget .fl-widget-titlebar h2 {padding:0; margin:0; font-size:105%;}
+.fl-widget .fl-widget-controls {margin:-1.3em 0 1.5em 0;}
+.fl-widget .fl-widget-options {margin-top:3px; padding:5px 10px 0px 10px;}
+.fl-widget .fl-widget-options ul {margin:0; padding:0; overflow:hidden; zoom:1;} 
+.fl-widget .fl-widget-options li {list-style-type:none; float:left; display:inline; padding:0 5px 0 5px; margin-left:-5px;}
+.fl-widget .fl-widget-options a {margin-right:5px;}
+.fl-widget .fl-widget-content {zoom:1; margin:5px 0 0 0; overflow: auto;}
+.fl-widget .fl-widget-content ul {}
+.fl-widget .empty * {padding-top:10px; margin-left:auto; margin-right:auto; text-align:center;}
+/* Common widget sub-components */
+.fl-widget .menu 	{margin:0;}
+.fl-widget .grabbable {cursor:move; background-position:center top; background-repeat:no-repeat;}
+.fl-widget h2.grabbable {background-position:center top;}
+.fl-widget .icon 	{text-indent:-5000px; cursor:pointer; display:block; height:16px; width:16px; margin-left:5px; margin-right:5px; background-repeat:no-repeat;}
+.fl-widget .toggle  {width:32px;}
+.fl-widget .on 		{background-position:left top;}
+.fl-widget .off 	{background-position:left bottom;}
+
+
+/*
+ * Progressive Enhancement
+ */
+.fl-progressive-enhancer {display:none;}
+
+/*
+Component Specific
+=============================================
+*/
+
+/* INLINE EDIT */
+.fl-component-inlineEdit span input {margin:-2px; padding:0;} /* auto generated input fields */
+
+
+
+/* PROGRESSOR */
+.fl-progress-bounds {border-width:1px; border-style:solid; padding:2px;}
+.fl-progress-fill {width:100%;}
+
+
+
+
+
+
