@@ -1,4 +1,0 @@
-{"jQueryTooltipPlugin": {
-	"files": ["jquery.tooltip.js"],
-	"dependencies": ["jQuery", "jQueryUICore"]
-}}

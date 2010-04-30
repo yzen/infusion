@@ -1,4 +1,0 @@
-{"renderer": {
-	"files": ["fluidParser.js", "fluidRenderer.js"],
-	"dependencies": ["jQuery", "framework", "fastXmlPull"]
-}}
