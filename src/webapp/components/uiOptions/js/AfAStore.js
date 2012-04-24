@@ -37,7 +37,7 @@ var fluid_1_5 = fluid_1_5 || {};
             },
             save: {
                 funcName: "fluid.afaStore.save",
-                args: ["{arguments}.0", "{afaStore}.options.userToken"]
+                args: ["{arguments}.0", "{afaStore}"]
             },
             AfAtoUIO: {
                 funcName: "fluid.afaStore.AfAtoUIO",
@@ -55,16 +55,27 @@ var fluid_1_5 = fluid_1_5 || {};
         userToken: "123"
     });
 
+    fluid.afaStore.getServerURL = function (prefsServerURL, userToken) {
+        return prefsServerURL + userToken;
+    }
+    
     fluid.afaStore.fetch = function (that) {
-        var getURL = that.options.prefsServerURL + that.options.userToken;
-        
-        $.get(getURL, function (data) {
-            console.log(that.AfAtoUIO(data));
+        $.get(fluid.afaStore.getServerURL(that.options.prefsServerURL, that.options.userToken), function (data) {
+            that.originalPrefs = data;
             that.events.settingsReady.fire(that.AfAtoUIO(data));
         });
     };
 
-    fluid.afaStore.save = function (settings, userToken) {
+    fluid.afaStore.save = function (settings, that) {
+        $.ajax({
+            url: fluid.afaStore.getServerURL(that.options.prefsServerURL, that.options.userToken),
+            type: "POST",
+            data: JSON.stringify(that.UIOtoAfA(settings)),
+            headers: {
+                "Accept": "application/json",
+                "Content-type": "application/json"
+            }
+        });
     };
 
     fluid.afaStore.AfAtoUIO = function (settings) {
