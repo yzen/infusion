@@ -60,17 +60,18 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             content: {
                 adaptationPreference: [{
                     adaptationType: "caption",
-//                    originalAccessMode: "auditory", // necessary? inferred?
                     language: "fr"
                 },{
-//                    adaptationType: "text representation", // necessary? inferred?
-//                    originalAccessMode: "auditory", // necessary? inferred?
                     representationForm: ["transcript"],
                     language: "fr"
                 }]
             }
         };
         
+
+
+
+
         var tests = new jqUnit.TestCase("Access for All Store Tests");
 
         /**
@@ -227,6 +228,24 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             afaResult = fluid.afaStore.UIOtoAfA({});
             jqUnit.assertDeepEq("Empty object for no setting", {}, afaResult.content.adaptationPreference[1]);
         });
+        tests.test("AfA to UIO: Transcripts", function () {
+            var afaTranscript = {
+                content: {
+                    adaptationPreference: [{
+                        representationForm: ["transcript"],
+                        language: "fr"
+                    }]
+                }
+            };
+            var expectedUIO = {
+                transcripts: true,
+                language: "fr"
+            };
+            var uioResult = fluid.afaStore.AfAtoUIO(afaTranscript);
+            jqUnit.assertEquals("Transcripts", expectedUIO.transcripts, uioResult.transcripts);
+            jqUnit.assertEquals("language", expectedUIO.language, uioResult.language);
+        });
+
 
         /**
          * Test both captions and transcripts
@@ -253,6 +272,28 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             jqUnit.assertEquals("Caption language", expectedAfa.content.adaptationPreference[0].language, afaResult.content.adaptationPreference[0].language);
             jqUnit.assertEquals("representation form", expectedAfa.content.adaptationPreference[1].representationForm[0], afaResult.content.adaptationPreference[1].representationForm[0]);
             jqUnit.assertEquals("Transcript language", expectedAfa.content.adaptationPreference[1].language, afaResult.content.adaptationPreference[1].language);
+        });
+        tests.test("AfA to UIO: Captions and Transcripts", function () {
+            var expectedUIO = {
+                captions: true,
+                transcripts: true,
+                language: "eo"
+            };
+            var afaAdaptations = {
+                content: {
+                    adaptationPreference: [{
+                        adaptationType: "caption",
+                        language: "eo"
+                    },{
+                        representationForm: ["transcript"],
+                        language: "es"
+                    }]
+                }
+            };
+            var uioResult = fluid.afaStore.AfAtoUIO(afaAdaptations);
+            jqUnit.assertEquals("Captions", expectedUIO.captions, uioResult.captions);
+            jqUnit.assertEquals("Transcripts", expectedUIO.transcripts, uioResult.transcripts);
+            jqUnit.assertEquals("language", expectedUIO.language, uioResult.language);
         });
 
 

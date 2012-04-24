@@ -267,7 +267,7 @@ var fluid_1_5 = fluid_1_5 || {};
             if (value.adaptationType === "caption" && !result.captions) {
                 result.captions = true;
                 result.language = value.language;
-            } else if (value.representationForm && $.inArray("transcript", value.representationForm)){
+            } else if (value.representationForm && $.inArray("transcript", value.representationForm) !== -1){
                 result.transcripts = true;
                 if (!result.language) {
                     result.language = value.language;
