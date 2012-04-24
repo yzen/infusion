@@ -46,7 +46,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                         fontName: ["Times New Roman"], // necessary?
                         genericFontFace: "serif"
                     },
-                    fontSize: "19.2",
+                    fontSize: 19.2,
                     foregroundColor: "yellow", // what format should these be?
                     backgroundColor: "black",  // hex? rgb? css strings?
                     invertColourChoice: false
@@ -73,6 +73,27 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
 
 
         var tests = new jqUnit.TestCase("Access for All Store Tests");
+
+        /**
+         * Test text size
+         */
+
+        tests.test("UIO to AFA: text size", function () {
+            var afaResult = fluid.afaStore.UIOtoAfA({textSize: "1.6"});
+            jqUnit.assertEquals("Size converts properly", 32, afaResult.display.screenEnhancement.fontSize);
+        });
+
+        tests.test("AfA to UIO: text size", function () {
+            var afaSettings = {
+                display: {
+                    screenEnhancement: {
+                        fontSize: 32
+                    }
+                }
+            };
+            var uioResult = fluid.afaStore.AfAtoUIO(afaSettings);
+            jqUnit.assertEquals("Size converts properly", "1.6", uioResult.textSize);
+        });
 
         /**
          *  Test font transformations

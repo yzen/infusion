@@ -90,6 +90,12 @@ var fluid_1_5 = fluid_1_5 || {};
                 }
             }
         },
+        textSize: {
+            expander: {
+                type: "fluid.afaStore.transform.fontFactor",
+                path: "display.screenEnhancement.fontSize"
+            }
+        },
         toc: {
             expander: {
                 type: "fluid.model.transform.value",
@@ -149,6 +155,12 @@ var fluid_1_5 = fluid_1_5 || {};
                         genericFontFace: "sans serif"
                     }
                 }
+            }
+        },
+        "display.screenEnhancement.fontSize": {
+            expander: {
+                type: "fluid.afaStore.transform.fontSize",
+                path: "textSize"
             }
         },
         "control.structuralNavigation.tableOfContents": {
@@ -275,5 +287,27 @@ var fluid_1_5 = fluid_1_5 || {};
             }
         });
         return result;
+    };
+    
+    var baseDocumentFontSize = function () {
+        return parseFloat($("html").css("font-size")); // will be the float # of pixels
+    };
+
+    fluid.afaStore.transform.fontFactor = function (model,expandSpec, recurse) {
+        var val = fluid.get(model, expandSpec.path);
+        if (!val) {
+            return {};
+        }
+
+        return (Math.round(parseFloat(val / baseDocumentFontSize()) * 10) /10).toString();
+    };
+
+    fluid.afaStore.transform.fontSize = function (model,expandSpec, recurse) {
+        var val = fluid.get(model, expandSpec.path);
+        if (!val) {
+            return {};
+        }
+
+        return baseDocumentFontSize() * val;
     };
 })(jQuery, fluid_1_5);
