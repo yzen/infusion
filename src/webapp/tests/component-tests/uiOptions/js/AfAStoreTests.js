@@ -60,11 +60,11 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             content: {
                 adaptationPreference: [{
                     adaptationType: "caption",
-                    originalAccessMode: "auditory", // necessary? inferred?
+//                    originalAccessMode: "auditory", // necessary? inferred?
                     language: "fr"
                 },{
-                    adaptationType: "text representation", // necessary? inferred?
-                    originalAccessMode: "auditory", // necessary? inferred?
+//                    adaptationType: "text representation", // necessary? inferred?
+//                    originalAccessMode: "auditory", // necessary? inferred?
                     representationForm: ["transcript"],
                     language: "fr"
                 }]

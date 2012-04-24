@@ -65,7 +65,10 @@ var fluid_1_5 = fluid_1_5 || {};
     };
 
     fluid.afaStore.AfAtoUIO = function (settings) {
-        return fluid.model.transformWithRules(settings, fluid.afaStore.AfAtoUIOtransformationRules);
+        return fluid.model.transformWithRules(settings, [
+            fluid.afaStore.flattenCaptionSpecRules,
+            fluid.afaStore.AfAtoUIOtransformationRules
+        ]);
     };
     
     fluid.afaStore.UIOtoAfA = function (settings) {
@@ -75,7 +78,7 @@ var fluid_1_5 = fluid_1_5 || {};
     fluid.afaStore.AfAtoUIOtransformationRules = {
         textFont: {
             expander: {
-                type: "fluid.afaStore.transform.demultiplexValue",
+                type: "fluid.afaStore.transform.valueMapper",
                 path: "display.screenEnhancement.fontFace.genericFontFace",
                 // TODO: For now, this ignores the actual "fontName" setting
                 valueMap: {
@@ -87,24 +90,46 @@ var fluid_1_5 = fluid_1_5 || {};
                 }
             }
         },
-        "toc": {
+        toc: {
             expander: {
                 type: "fluid.model.transform.value",
                 path: "control.structuralNavigation.tableOfContents"
             }
         },
-        "caption": {
+        captions: {
             expander: {
-                type: "fluid.afaStore.transform.uioCaption",
-                path: "content.adaptationPreference"
+                type: "fluid.model.transform.value",
+                path: "flatAdaptationPreferences.captions"
+            }
+        },
+        transcripts: {
+            expander: {
+                type: "fluid.model.transform.value",
+                path: "flatAdaptationPreferences.transcripts"
+            }
+        },
+        language: {
+            expander: {
+                type: "fluid.model.transform.value",
+                path: "flatAdaptationPreferences.language"
             }
         }
     };
 
+    fluid.afaStore.flattenCaptionSpecRules = {
+        flatAdaptationPreferences: {
+            expander: {
+                type: "fluid.afaStore.transform.flattenCaptions", 
+                path: "content.adaptationPreference"
+            }
+        },
+        display: "display",
+        control: "control"
+    };
     fluid.afaStore.UIOtoAfAtransformationRules = {
         "display.screenEnhancement.fontFace": {
             expander: {
-                type: "fluid.afaStore.transform.demultiplexValue",
+                type: "fluid.afaStore.transform.valueMapper",
                 path: "textFont",
                 valueMap: {
                     times: {
@@ -138,6 +163,7 @@ var fluid_1_5 = fluid_1_5 || {};
                 path: "captions"
             }
         },
+        // NB: This will always place transcripts second in the array, even if there are no captions
         "content.adaptationPreference.1": {
             expander: {
                 type: "fluid.afaStore.transform.afaTranscript",
@@ -157,7 +183,7 @@ var fluid_1_5 = fluid_1_5 || {};
      * Note that the value may be an object.
      * NOTE: This does not yet handle recursion or special cases
      */
-    fluid.afaStore.transform.demultiplexValue = function (model, expandSpec, recurse) {
+    fluid.afaStore.transform.valueMapper = function (model, expandSpec, recurse) {
         var val = fluid.get(model, expandSpec.path);
         
         if (typeof(val) !== "undefined") {
@@ -192,6 +218,62 @@ var fluid_1_5 = fluid_1_5 || {};
     };
     
     fluid.afaStore.transform.uioCaption = function (model, expandSpec, recurse) {
-        
+        var adaptPrefs = fluid.get(model, expandSpec.path);
+        if (!adaptPrefs) {
+            return {};
+        }
+
+        var capSpec;
+        for (var i = 0; i < adaptPrefs.length; i++) {
+            // find the first caption specification
+            if (adaptPrefs[i].adaptationType === "caption") {
+                capSpec = adaptPrefs[i];
+                break;
+            }
+        }
+        if (!capSpec) {
+            return {};
+        }
+        return true;
+    };
+
+    fluid.afaStore.transform.uioCaptionLanguage = function (model, expandSpec, recurse) {
+        var adaptPrefs = fluid.get(model, expandSpec.path);
+        if (!adaptPrefs) {
+            return {};
+        }
+
+        var capSpec;
+        for (var i = 0; i < adaptPrefs.length; i++) {
+            // find the first caption specification
+            if (adaptPrefs[i].adaptationType === "caption") {
+                capSpec = adaptPrefs[i];
+                break;
+            }
+        }
+        if (!capSpec) {
+            return {};
+        }
+        return capSpec.language;
+    };
+    
+    fluid.afaStore.transform.flattenCaptions = function (model,expandSpec, recurse) {
+        var adaptPrefs = fluid.get(model, expandSpec.path);
+        if (!adaptPrefs) {
+            return {};
+        }
+        result = {};
+        fluid.each(adaptPrefs, function (value, key) {
+            if (value.adaptationType === "caption" && !result.captions) {
+                result.captions = true;
+                result.language = value.language;
+            } else if (value.representationForm && $.inArray("transcript", value.representationForm)){
+                result.transcripts = true;
+                if (!result.language) {
+                    result.language = value.language;
+                }
+            }
+        });
+        return result;
     };
 })(jQuery, fluid_1_5);
