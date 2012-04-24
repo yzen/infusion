@@ -21,7 +21,7 @@ var fluid_1_5 = fluid_1_5 || {};
 (function ($, fluid) {
     
     fluid.defaults("fluid.uiOptions.store", {
-        gradeNames: ["fluid.littleComponent", "autoInit"],
+        gradeNames: ["fluid.eventedComponent", "autoInit"],
         defaultSiteSettings: {
         // TODO: Note that since antification is not complete, this information now
         // duplicates that kept within the "halfway ants" which are registered as the panels

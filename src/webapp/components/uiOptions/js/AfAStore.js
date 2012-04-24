@@ -33,7 +33,7 @@ var fluid_1_5 = fluid_1_5 || {};
         invokers: {
             fetch: {
                 funcName: "fluid.afaStore.fetch",
-                args: ["{afaStore}.options.userToken", "{afaStore}.options.defaultSiteSettings"]
+                args: ["{afaStore}"]
             },
             save: {
                 funcName: "fluid.afaStore.save",
@@ -48,17 +48,20 @@ var fluid_1_5 = fluid_1_5 || {};
                 args: ["{arguments}.0"]
             }
         },
-        components: {
-            prefsStore: {
-                type: "",
-                options: "fluid.afaStore.gpiiPrefsServer"
-            }
-        }
+        events: {
+            settingsReady: null
+        },
+        prefsServerURL: "http://localhost:8080/store/",
+        userToken: "123"
     });
 
-    fluid.afaStore.fetch = function (userToken, defaults) {
-        var retObj;
-        return retObj || defaults;
+    fluid.afaStore.fetch = function (that) {
+        var getURL = that.options.prefsServerURL + that.options.userToken;
+        
+        $.get(getURL, function (data) {
+            console.log(that.AfAtoUIO(data));
+            that.events.settingsReady.fire(that.AfAtoUIO(data));
+        });
     };
 
     fluid.afaStore.save = function (settings, userToken) {

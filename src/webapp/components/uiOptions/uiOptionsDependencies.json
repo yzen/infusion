@@ -12,6 +12,7 @@
         "files": [
             "URLUtilities.js",
             "Store.js",
+            "AfAStore.js",
             "UIEnhancer.js",
             "UIOptions.js",
             "FatPanelUIOptions.js",
