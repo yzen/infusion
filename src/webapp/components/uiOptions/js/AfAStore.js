@@ -30,6 +30,7 @@ var fluid_1_5 = fluid_1_5 || {};
      */
     fluid.defaults("fluid.afaStore", {
         gradeNames: ["fluid.uiOptions.store", "autoInit"],
+        finalInitFunction: "fluid.afaStore.finalInit",
         invokers: {
             fetch: {
                 funcName: "fluid.afaStore.fetch",
@@ -41,19 +42,54 @@ var fluid_1_5 = fluid_1_5 || {};
             },
             AfAtoUIO: {
                 funcName: "fluid.afaStore.AfAtoUIO",
-                args: ["{arguments}.0"] // need this?
+                args: ["{arguments}.0", "{afaStore}"]
             },
             UIOtoAfA: {
                 funcName: "fluid.afaStore.UIOtoAfA",
-                args: ["{arguments}.0"]
+                args: ["{arguments}.0", "{afaStore}"]
             }
         },
         events: {
+            rulesReady: null,
             settingsReady: null
         },
+        rulesURL: "../AfATransformRules/",
         prefsServerURL: "http://localhost:8080/store/",
         userToken: "123"
     });
+
+    var resources = {
+        AfAtoUIOrules: {
+            href: "AfAtoUIOrules.json",
+            options: {
+                dataType: "json"
+            }
+        },
+        AfAtoUIOAdaptPrefRules: {
+            href: "AfAtoUIOAdaptPrefRules.json",
+            options: {
+                dataType: "json"
+            }
+        },
+        UIOtoAfArules: {
+            href: "UIOtoAfArules.json",
+            options: {
+                dataType: "json"
+            }
+        }
+    };
+
+    fluid.afaStore.finalInit = function (that) {
+        fluid.each(resources, function (value, key) {
+            value.href = that.options.rulesURL + value.href;
+        });
+        fluid.fetchResources(resources, function () {
+            fluid.each(resources, function (value, key) {
+                that[key] = resources[key].resourceText;
+            });
+            that.events.rulesReady.fire();
+        });
+    };
 
     fluid.afaStore.getServerURL = function (prefsServerURL, userToken) {
         return prefsServerURL + userToken;
@@ -78,124 +114,15 @@ var fluid_1_5 = fluid_1_5 || {};
         });
     };
 
-    fluid.afaStore.AfAtoUIO = function (settings) {
+    fluid.afaStore.AfAtoUIO = function (settings, that) {
         return fluid.model.transformWithRules(settings, [
-            fluid.afaStore.flattenCaptionSpecRules,
-            fluid.afaStore.AfAtoUIOtransformationRules
+            that.AfAtoUIOAdaptPrefRules,
+            that.AfAtoUIOrules
         ]);
     };
     
-    fluid.afaStore.UIOtoAfA = function (settings) {
-        return fluid.model.transformWithRules(settings, fluid.afaStore.UIOtoAfAtransformationRules);
-    };
-
-    fluid.afaStore.AfAtoUIOtransformationRules = {
-        textFont: {
-            expander: {
-                type: "fluid.afaStore.transform.valueMapper",
-                path: "display.screenEnhancement.fontFace.genericFontFace",
-                // TODO: For now, this ignores the actual "fontName" setting
-                valueMap: {
-                    serif: "times",
-                    "sans serif": "verdana",
-                    monospaced: "default",
-                    fantasy: "default",
-                    cursive: "default"
-                }
-            }
-        },
-        textSize: {
-            expander: {
-                type: "fluid.afaStore.transform.fontFactor",
-                path: "display.screenEnhancement.fontSize"
-            }
-        },
-        toc: {
-            expander: {
-                type: "fluid.model.transform.value",
-                path: "control.structuralNavigation.tableOfContents"
-            }
-        },
-        captions: {
-            expander: {
-                type: "fluid.model.transform.value",
-                path: "flatAdaptationPreferences.captions"
-            }
-        },
-        transcripts: {
-            expander: {
-                type: "fluid.model.transform.value",
-                path: "flatAdaptationPreferences.transcripts"
-            }
-        },
-        language: {
-            expander: {
-                type: "fluid.model.transform.value",
-                path: "flatAdaptationPreferences.language"
-            }
-        }
-    };
-
-    fluid.afaStore.flattenCaptionSpecRules = {
-        flatAdaptationPreferences: {
-            expander: {
-                type: "fluid.afaStore.transform.flattenCaptions", 
-                path: "content.adaptationPreference"
-            }
-        },
-        display: "display",
-        control: "control"
-    };
-    fluid.afaStore.UIOtoAfAtransformationRules = {
-        "display.screenEnhancement.fontFace": {
-            expander: {
-                type: "fluid.afaStore.transform.valueMapper",
-                path: "textFont",
-                valueMap: {
-                    times: {
-                        fontName: ["Times New Roman"],
-                        genericFontFace: "serif"
-                    },
-                    verdana: {
-                        fontName: ["Verdana"],
-                        genericFontFace: "sans serif"
-                    },
-                    arial: {
-                        fontName: ["Arial"],
-                        genericFontFace: "sans serif"
-                    },
-                    comic: {
-                        fontName: ["Comic Sans"],
-                        genericFontFace: "sans serif"
-                    }
-                }
-            }
-        },
-        "display.screenEnhancement.fontSize": {
-            expander: {
-                type: "fluid.afaStore.transform.fontSize",
-                path: "textSize"
-            }
-        },
-        "control.structuralNavigation.tableOfContents": {
-            expander: {
-                type: "fluid.model.transform.value",
-                path: "toc"
-            }
-        },
-        "content.adaptationPreference.0": {
-            expander: {
-                type: "fluid.afaStore.transform.afaCaption",
-                path: "captions"
-            }
-        },
-        // NB: This will always place transcripts second in the array, even if there are no captions
-        "content.adaptationPreference.1": {
-            expander: {
-                type: "fluid.afaStore.transform.afaTranscript",
-                path: "transcripts"
-            }
-        }
+    fluid.afaStore.UIOtoAfA = function (settings, that) {
+        return fluid.model.transformWithRules(settings, that.UIOtoAfArules);
     };
 
     /*********************
@@ -219,7 +146,7 @@ var fluid_1_5 = fluid_1_5 || {};
     
     /**
      * Produce a caption AfA adaptationPreference object.
-     * This transformer assumes knowledge of the "language" path in the sourc model.
+     * This transformer assumes knowledge of the "language" path in the source model.
      */
     fluid.afaStore.transform.afaCaption = function (model, expandSpec, recurse) {
         var cap = fluid.get(model, expandSpec.path);
@@ -232,6 +159,10 @@ var fluid_1_5 = fluid_1_5 || {};
         };
     };
 
+    /**
+     * Produce a transcript AfA adaptationPreference object.
+     * This transformer assumes knowledge of the "language" path in the source model.
+     */
     fluid.afaStore.transform.afaTranscript = function (model, expandSpec, recurse) {
         var tran = fluid.get(model, expandSpec.path);
         if (!tran) {
@@ -243,47 +174,10 @@ var fluid_1_5 = fluid_1_5 || {};
         };
     };
     
-    fluid.afaStore.transform.uioCaption = function (model, expandSpec, recurse) {
-        var adaptPrefs = fluid.get(model, expandSpec.path);
-        if (!adaptPrefs) {
-            return {};
-        }
-
-        var capSpec;
-        for (var i = 0; i < adaptPrefs.length; i++) {
-            // find the first caption specification
-            if (adaptPrefs[i].adaptationType === "caption") {
-                capSpec = adaptPrefs[i];
-                break;
-            }
-        }
-        if (!capSpec) {
-            return {};
-        }
-        return true;
-    };
-
-    fluid.afaStore.transform.uioCaptionLanguage = function (model, expandSpec, recurse) {
-        var adaptPrefs = fluid.get(model, expandSpec.path);
-        if (!adaptPrefs) {
-            return {};
-        }
-
-        var capSpec;
-        for (var i = 0; i < adaptPrefs.length; i++) {
-            // find the first caption specification
-            if (adaptPrefs[i].adaptationType === "caption") {
-                capSpec = adaptPrefs[i];
-                break;
-            }
-        }
-        if (!capSpec) {
-            return {};
-        }
-        return capSpec.language;
-    };
-    
-    fluid.afaStore.transform.flattenCaptions = function (model,expandSpec, recurse) {
+    /**
+     * Intermediate process: flatten the array of adaptationPreferences
+     */
+    fluid.afaStore.transform.flattenAdaptPrefs = function (model,expandSpec, recurse) {
         var adaptPrefs = fluid.get(model, expandSpec.path);
         if (!adaptPrefs) {
             return {};
@@ -307,6 +201,9 @@ var fluid_1_5 = fluid_1_5 || {};
         return parseFloat($("html").css("font-size")); // will be the float # of pixels
     };
 
+    /**
+     * 
+     */
     fluid.afaStore.transform.fontFactor = function (model,expandSpec, recurse) {
         var val = fluid.get(model, expandSpec.path);
         if (!val) {
@@ -316,6 +213,9 @@ var fluid_1_5 = fluid_1_5 || {};
         return (Math.round(parseFloat(val / baseDocumentFontSize()) * 10) /10).toString();
     };
 
+    /**
+     * 
+     */
     fluid.afaStore.transform.fontSize = function (model,expandSpec, recurse) {
         var val = fluid.get(model, expandSpec.path);
         if (!val) {

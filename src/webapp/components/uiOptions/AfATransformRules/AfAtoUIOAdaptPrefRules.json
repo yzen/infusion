@@ -1,0 +1,10 @@
+{
+    "flatAdaptationPreferences": {
+        "expander": {
+            "type": "fluid.afaStore.transform.flattenAdaptPrefs", 
+            "path": "content.adaptationPreference"
+        }
+    },
+    "display": "display",
+    "control": "control"
+}

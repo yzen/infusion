@@ -18,6 +18,10 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
 (function ($) {
     $(document).ready(function () {
 
+/**************************************************************
+ * These two settings objects are for 'documentation' purposes;
+ * They are not actually used by tests
+ */
         // UIO automatically saves all settings all the time, so any UIO object that is to be
         // processed will always contain all of these properties
         // On the other hand, when creating a UIO settings object, we don't need to create all of them
@@ -67,19 +71,22 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                 }]
             }
         };
-        
-
-
-
+/**
+ * end 'documentation' preferences
+ *****************************************************/
 
         var tests = new jqUnit.TestCase("Access for All Store Tests");
+
+        var theStore = fluid.afaStore({
+            rulesURL: "../../../../components/uiOptions/AfATransformRules/"
+        });
 
         /**
          * Test text size
          */
 
         tests.test("UIO to AFA: text size", function () {
-            var afaResult = fluid.afaStore.UIOtoAfA({textSize: "1.6"});
+            var afaResult = theStore.UIOtoAfA({textSize: "1.6"});
             jqUnit.assertEquals("Size converts properly", 32, afaResult.display.screenEnhancement.fontSize);
         });
 
@@ -91,7 +98,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                     }
                 }
             };
-            var uioResult = fluid.afaStore.AfAtoUIO(afaSettings);
+            var uioResult = theStore.AfAtoUIO(afaSettings);
             jqUnit.assertEquals("Size converts properly", "1.6", uioResult.textSize);
         });
 
@@ -100,15 +107,15 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
          */
 
         tests.test("UIO to AfA: fonts", function () {
-            var afaResult = fluid.afaStore.UIOtoAfA({textFont: "times"});
+            var afaResult = theStore.UIOtoAfA({textFont: "times"});
             jqUnit.assertEquals("Font name for 'times'", "Times New Roman", afaResult.display.screenEnhancement.fontFace.fontName[0]);
             jqUnit.assertEquals("Font face for 'times'", "serif", afaResult.display.screenEnhancement.fontFace.genericFontFace);
 
-            afaResult = fluid.afaStore.UIOtoAfA({textFont: "verdana"});
+            afaResult = theStore.UIOtoAfA({textFont: "verdana"});
             jqUnit.assertEquals("Font name for 'verdana'", "Verdana", afaResult.display.screenEnhancement.fontFace.fontName[0]);
             jqUnit.assertEquals("Font face for 'verdana'", "sans serif", afaResult.display.screenEnhancement.fontFace.genericFontFace);
 
-            afaResult = fluid.afaStore.UIOtoAfA({textFont: "default"});
+            afaResult = theStore.UIOtoAfA({textFont: "default"});
             jqUnit.assertUndefined("No result for 'default'", afaResult.screenEnhancement);
         });
         tests.test("AfA to UIO: fonts", function () {
@@ -122,26 +129,26 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                     }
                 }
             };
-            var uioResult = fluid.afaStore.AfAtoUIO(afaFontFamilySettings);
+            var uioResult = theStore.AfAtoUIO(afaFontFamilySettings);
             jqUnit.assertEquals("serif", "times", uioResult.textFont);
 
             afaFontFamilySettings.display.screenEnhancement.fontFace.genericFontFace = "sans serif";
-            uioResult = fluid.afaStore.AfAtoUIO(afaFontFamilySettings);
+            uioResult = theStore.AfAtoUIO(afaFontFamilySettings);
             jqUnit.assertEquals("sans serif", "verdana", uioResult.textFont);
 
             afaFontFamilySettings.display.screenEnhancement.fontFace.genericFontFace = "monospaced";
-            uioResult = fluid.afaStore.AfAtoUIO(afaFontFamilySettings);
+            uioResult = theStore.AfAtoUIO(afaFontFamilySettings);
             jqUnit.assertEquals("monospaced", "default", uioResult.textFont);
 
             afaFontFamilySettings.display.screenEnhancement.fontFace.genericFontFace = "fantasy";
-            uioResult = fluid.afaStore.AfAtoUIO(afaFontFamilySettings);
+            uioResult = theStore.AfAtoUIO(afaFontFamilySettings);
             jqUnit.assertEquals("fantasy", "default", uioResult.textFont);
 
             afaFontFamilySettings.display.screenEnhancement.fontFace.genericFontFace = "cursive";
-            uioResult = fluid.afaStore.AfAtoUIO(afaFontFamilySettings);
+            uioResult = theStore.AfAtoUIO(afaFontFamilySettings);
             jqUnit.assertEquals("cursive", "default", uioResult.textFont);
 
-            uioResult = fluid.afaStore.AfAtoUIO({});
+            uioResult = theStore.AfAtoUIO({});
             jqUnit.assertUndefined("no result for no setting", uioResult.textFont);
         });
 
@@ -150,13 +157,13 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
          */
 
         tests.test("UIO to AfA: Table of contents", function () {
-            var afaResult = fluid.afaStore.UIOtoAfA({toc: true});
+            var afaResult = theStore.UIOtoAfA({toc: true});
             jqUnit.assertEquals("Table of contents on", true, afaResult.control.structuralNavigation.tableOfContents);
 
-            var afaResult = fluid.afaStore.UIOtoAfA({toc: false});
+            var afaResult = theStore.UIOtoAfA({toc: false});
             jqUnit.assertEquals("Table of contents off", false, afaResult.control.structuralNavigation.tableOfContents);
 
-            var afaResult = fluid.afaStore.UIOtoAfA({});
+            var afaResult = theStore.UIOtoAfA({});
             jqUnit.assertUndefined("no result for no setting", afaResult.control);
         });
         tests.test("AfA to UIO: Table of contents", function () {
@@ -167,14 +174,14 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                     }
                 }
             };
-            var uioResult = fluid.afaStore.AfAtoUIO(afaTocSettings);
+            var uioResult = theStore.AfAtoUIO(afaTocSettings);
             jqUnit.assertEquals("Table of contents: true", true, uioResult.toc);
 
             afaTocSettings.control.structuralNavigation.tableOfContents = false;
-            uioResult = fluid.afaStore.AfAtoUIO(afaTocSettings);
+            uioResult = theStore.AfAtoUIO(afaTocSettings);
             jqUnit.assertEquals("Table of contents: false", false, uioResult.toc);
 
-            uioResult = fluid.afaStore.AfAtoUIO({});
+            uioResult = theStore.AfAtoUIO({});
             jqUnit.assertUndefined("no result for no setting", uioResult.toc);
         });
 
@@ -197,11 +204,11 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                     }]
                 }
             };
-            var afaResult = fluid.afaStore.UIOtoAfA(uioCaptions);
+            var afaResult = theStore.UIOtoAfA(uioCaptions);
             jqUnit.assertEquals("adaptation type", expectedAfa.content.adaptationPreference[0].adaptationType, afaResult.content.adaptationPreference[0].adaptationType);
             jqUnit.assertEquals("Caption language", expectedAfa.content.adaptationPreference[0].language, afaResult.content.adaptationPreference[0].language);
             
-            afaResult = fluid.afaStore.UIOtoAfA({});
+            afaResult = theStore.UIOtoAfA({});
             jqUnit.assertDeepEq("Empty object for no setting", {}, afaResult.content.adaptationPreference[0]);
         });
         tests.test("AfA to UIO: Captions", function () {
@@ -217,7 +224,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                 captions: true,
                 language: "fr"
             };
-            var uioResult = fluid.afaStore.AfAtoUIO(afaCaptions);
+            var uioResult = theStore.AfAtoUIO(afaCaptions);
             jqUnit.assertEquals("Captions", expectedUIO.captions, uioResult.captions);
             jqUnit.assertEquals("language", expectedUIO.language, uioResult.language);
         });
@@ -242,11 +249,11 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                     }]
                 }
             };
-            var afaResult = fluid.afaStore.UIOtoAfA(uioTranscripts);
+            var afaResult = theStore.UIOtoAfA(uioTranscripts);
             jqUnit.assertEquals("representation form", expectedAfa.content.adaptationPreference[1].representationForm[0], afaResult.content.adaptationPreference[1].representationForm[0]);
             jqUnit.assertEquals("Transcript language", expectedAfa.content.adaptationPreference[1].language, afaResult.content.adaptationPreference[1].language);
             
-            afaResult = fluid.afaStore.UIOtoAfA({});
+            afaResult = theStore.UIOtoAfA({});
             jqUnit.assertDeepEq("Empty object for no setting", {}, afaResult.content.adaptationPreference[1]);
         });
         tests.test("AfA to UIO: Transcripts", function () {
@@ -262,7 +269,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                 transcripts: true,
                 language: "fr"
             };
-            var uioResult = fluid.afaStore.AfAtoUIO(afaTranscript);
+            var uioResult = theStore.AfAtoUIO(afaTranscript);
             jqUnit.assertEquals("Transcripts", expectedUIO.transcripts, uioResult.transcripts);
             jqUnit.assertEquals("language", expectedUIO.language, uioResult.language);
         });
@@ -288,7 +295,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                     }]
                 }
             };
-            var afaResult = fluid.afaStore.UIOtoAfA(uioCaptions);
+            var afaResult = theStore.UIOtoAfA(uioCaptions);
             jqUnit.assertEquals("adaptation type", expectedAfa.content.adaptationPreference[0].adaptationType, afaResult.content.adaptationPreference[0].adaptationType);
             jqUnit.assertEquals("Caption language", expectedAfa.content.adaptationPreference[0].language, afaResult.content.adaptationPreference[0].language);
             jqUnit.assertEquals("representation form", expectedAfa.content.adaptationPreference[1].representationForm[0], afaResult.content.adaptationPreference[1].representationForm[0]);
@@ -311,20 +318,62 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                     }]
                 }
             };
-            var uioResult = fluid.afaStore.AfAtoUIO(afaAdaptations);
+            var uioResult = theStore.AfAtoUIO(afaAdaptations);
             jqUnit.assertEquals("Captions", expectedUIO.captions, uioResult.captions);
             jqUnit.assertEquals("Transcripts", expectedUIO.transcripts, uioResult.transcripts);
             jqUnit.assertEquals("language", expectedUIO.language, uioResult.language);
         });
 
+        /**
+         * Theme tests
+         */
+        tests.test("AfA to UIO: theme", function () {
+            var uioResult = theStore.AfAtoUIO({
+                display: {
+                    screenEnhancement: {
+                        foregroundColor: "yellow",
+                        backgroundColor: "black"
+                    }
+                }
+            });
+            jqUnit.assertEquals("yellow-on-black", "yb", uioResult.theme);
 
-
-
-        tests.test("AfA caption and transcript language different", function () {});
-
-        tests.test("Extra settings preserved", function () {
-
+            uioResult = theStore.AfAtoUIO({
+                display: {
+                    screenEnhancement: {
+                        foregroundColor: "green",
+                        backgroundColor: "black"
+                    }
+                }
+            });
+            jqUnit.assertEquals("unsupported combination", "default", uioResult.theme);
         });
 
+        tests.test("AfA to UIO: theme", function () {
+            var expectedAfA = {
+                display: {
+                    screenEnhancement: {
+                        foregroundColor: "yellow",
+                        backgroundColor: "black"
+                    }
+                }
+            };
+
+            var afaResult = theStore.UIOtoAfA({theme: "yb"});
+            jqUnit.assertEquals("Foreground", "yellow", afaResult.display.screenEnhancement.foregroundColor);
+            jqUnit.assertEquals("Background", "black", afaResult.display.screenEnhancement.backgroundColor);
+
+            afaResult = theStore.UIOtoAfA({theme: "default"});
+            jqUnit.assertUndefined("No results for default setting", {}, afaResult.display.screenEnhancement.foregroundColor);
+            jqUnit.assertUndefined("No results for default setting", {}, afaResult.display.screenEnhancement.backgroundColor);
+        });
+
+        tests.test("AfA caption and transcript language different", function () {
+            jqUnit.assertFalse("No tests yet", true);
+        });
+
+        tests.test("Extra settings preserved", function () {
+            jqUnit.assertFalse("No tests yet", true);
+        });
     });
 })(jQuery);
