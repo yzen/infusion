@@ -213,14 +213,16 @@ var fluid_1_5 = fluid_1_5 || {};
         that.lateRefreshRelay = function () {
             that.events.lateRefreshView.fire(that);
         };
+
+        that.settingsStore.events.settingsReady.addListener(function (settings) {
+            that.updateModel(settings);
+        });
+        
         that.updateFromSettingsStore();
         return that;
     };
     
     fluid.uiEnhancer.updateFromSettingsStore = function (that) {
-        that.settingsStore.events.settingsReady.addListener(function (settings) {
-            that.updateModel(settings);
-        });
         that.settingsStore.fetch();
     };
 
