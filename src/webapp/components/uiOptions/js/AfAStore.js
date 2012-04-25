@@ -224,4 +224,28 @@ var fluid_1_5 = fluid_1_5 || {};
 
         return baseDocumentFontSize() * val;
     };
+
+    var colourTable = {
+        white: {
+            black: "wb"
+        },
+        yellow: {
+            black: "yb"
+        },
+        black: {
+            white: "bw",
+            yellow: "by"
+        }
+    }
+    /**
+     * Convert a foreground/background colour combination into a theme name.
+     * Assumptions: If one of the colours is not specified, we cannot identify a theme.
+     */
+    fluid.afaStore.transform.coloursToTheme = function (model,expandSpec, recurse) {
+        var fg = fluid.get(model, expandSpec.fgpath);
+        var bg = fluid.get(model, expandSpec.bgpath);
+        if (colourTable[fg]) {
+            return colourTable[fg][bg];
+        }
+    };
 })(jQuery, fluid_1_5);

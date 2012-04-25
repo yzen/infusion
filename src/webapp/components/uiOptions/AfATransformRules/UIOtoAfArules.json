@@ -47,5 +47,29 @@
             "type": "fluid.afaStore.transform.afaTranscript",
             "path": "transcripts"
         }
+    },
+    "display.screenEnhancement.foregroundColor": {
+        "expander": {
+            "type": "fluid.afaStore.transform.valueMapper",
+            "path": "theme",
+            "valueMap": {
+                "yb": "yellow",
+                "by": "black",
+                "wb": "white",
+                "bw": "black"
+            }
+        }
+    },
+    "display.screenEnhancement.backgroundColor": {
+        "expander": {
+            "type": "fluid.afaStore.transform.valueMapper",
+            "path": "theme",
+            "valueMap": {
+                "yb": "black",
+                "by": "yellow",
+                "wb": "black",
+                "bw": "white"
+            }
+        }
     }
 }

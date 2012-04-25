@@ -328,29 +328,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
          * Theme tests
          */
         tests.test("AfA to UIO: theme", function () {
-            var uioResult = theStore.AfAtoUIO({
-                display: {
-                    screenEnhancement: {
-                        foregroundColor: "yellow",
-                        backgroundColor: "black"
-                    }
-                }
-            });
-            jqUnit.assertEquals("yellow-on-black", "yb", uioResult.theme);
-
-            uioResult = theStore.AfAtoUIO({
-                display: {
-                    screenEnhancement: {
-                        foregroundColor: "green",
-                        backgroundColor: "black"
-                    }
-                }
-            });
-            jqUnit.assertEquals("unsupported combination", "default", uioResult.theme);
-        });
-
-        tests.test("AfA to UIO: theme", function () {
-            var expectedAfA = {
+            var testAfA = {
                 display: {
                     screenEnhancement: {
                         foregroundColor: "yellow",
@@ -358,14 +336,55 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                     }
                 }
             };
+            var uioResult = theStore.AfAtoUIO(testAfA);
+            jqUnit.assertEquals("yellow-on-black", "yb", uioResult.theme);
 
+            testAfA.display.screenEnhancement.foregroundColor = "black";
+            testAfA.display.screenEnhancement.backgroundColor = "yellow";
+            uioResult = theStore.AfAtoUIO(testAfA);
+            jqUnit.assertEquals("black-on-yellow", "by", uioResult.theme);
+
+            testAfA.display.screenEnhancement.foregroundColor = "black";
+            testAfA.display.screenEnhancement.backgroundColor = "white";
+            uioResult = theStore.AfAtoUIO(testAfA);
+            jqUnit.assertEquals("black-on-white", "bw", uioResult.theme);
+
+            testAfA.display.screenEnhancement.foregroundColor = "white";
+            testAfA.display.screenEnhancement.backgroundColor = "black";
+            uioResult = theStore.AfAtoUIO(testAfA);
+            jqUnit.assertEquals("white-on-black", "wb", uioResult.theme);
+
+            testAfA.display.screenEnhancement.foregroundColor = "green";
+            testAfA.display.screenEnhancement.backgroundColor = "black";
+            uioResult = theStore.AfAtoUIO(testAfA);
+            jqUnit.assertUndefined("unsupported combination should return undefined", uioResult.theme);
+
+            testAfA.display.screenEnhancement.foregroundColor = "yellow";
+            testAfA.display.screenEnhancement.backgroundColor = undefined;
+            uioResult = theStore.AfAtoUIO(testAfA);
+            jqUnit.assertUndefined("missing colour should return undefined", uioResult.theme);
+        });
+
+        tests.test("UIO to AfA: theme", function () {
             var afaResult = theStore.UIOtoAfA({theme: "yb"});
-            jqUnit.assertEquals("Foreground", "yellow", afaResult.display.screenEnhancement.foregroundColor);
-            jqUnit.assertEquals("Background", "black", afaResult.display.screenEnhancement.backgroundColor);
+            jqUnit.assertEquals("YB Foreground", "yellow", afaResult.display.screenEnhancement.foregroundColor);
+            jqUnit.assertEquals("YB Background", "black", afaResult.display.screenEnhancement.backgroundColor);
+
+            afaResult = theStore.UIOtoAfA({theme: "by"});
+            jqUnit.assertEquals("BY Foreground", "black", afaResult.display.screenEnhancement.foregroundColor);
+            jqUnit.assertEquals("BY Background", "yellow", afaResult.display.screenEnhancement.backgroundColor);
+
+            afaResult = theStore.UIOtoAfA({theme: "wb"});
+            jqUnit.assertEquals("WB Foreground", "white", afaResult.display.screenEnhancement.foregroundColor);
+            jqUnit.assertEquals("WB Background", "black", afaResult.display.screenEnhancement.backgroundColor);
+
+            afaResult = theStore.UIOtoAfA({theme: "bw"});
+            jqUnit.assertEquals("BW Foreground", "black", afaResult.display.screenEnhancement.foregroundColor);
+            jqUnit.assertEquals("BW Background", "white", afaResult.display.screenEnhancement.backgroundColor);
 
             afaResult = theStore.UIOtoAfA({theme: "default"});
-            jqUnit.assertUndefined("No results for default setting", {}, afaResult.display.screenEnhancement.foregroundColor);
-            jqUnit.assertUndefined("No results for default setting", {}, afaResult.display.screenEnhancement.backgroundColor);
+            jqUnit.assertUndefined("No results for default setting", afaResult.display.screenEnhancement.foregroundColor);
+            jqUnit.assertUndefined("No results for default setting", afaResult.display.screenEnhancement.backgroundColor);
         });
 
         tests.test("AfA caption and transcript language different", function () {
