@@ -86,8 +86,15 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
          */
 
         tests.test("UIO to AFA: text size", function () {
+            // Size set in HTML is 20px
             var afaResult = theStore.UIOtoAfA({textSize: "1.6"});
             jqUnit.assertEquals("Size converts properly", 32, afaResult.display.screenEnhancement.fontSize);
+
+            afaResult = theStore.UIOtoAfA({textSize: "1"});
+            jqUnit.assertEquals("Size converts properly", 20, afaResult.display.screenEnhancement.fontSize);
+
+            afaResult = theStore.UIOtoAfA({textSize: "0.5"});
+            jqUnit.assertEquals("Size converts properly", 10, afaResult.display.screenEnhancement.fontSize);
         });
 
         tests.test("AfA to UIO: text size", function () {
@@ -98,8 +105,13 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                     }
                 }
             };
-            var uioResult = theStore.AfAtoUIO(afaSettings);
-            jqUnit.assertEquals("Size converts properly", "1.6", uioResult.textSize);
+            jqUnit.assertEquals("Size converts properly", "1.6", theStore.AfAtoUIO(afaSettings).textSize);
+
+            afaSettings.display.screenEnhancement.fontSize = 20;
+            jqUnit.assertEquals("Size converts properly", "1", theStore.AfAtoUIO(afaSettings).textSize);
+
+            afaSettings.display.screenEnhancement.fontSize = 10;
+            jqUnit.assertEquals("Size converts properly", "0.5", theStore.AfAtoUIO(afaSettings).textSize);
         });
 
         /**
@@ -113,6 +125,14 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
 
             afaResult = theStore.UIOtoAfA({textFont: "verdana"});
             jqUnit.assertEquals("Font name for 'verdana'", "Verdana", afaResult.display.screenEnhancement.fontFace.fontName[0]);
+            jqUnit.assertEquals("Font face for 'verdana'", "sans serif", afaResult.display.screenEnhancement.fontFace.genericFontFace);
+
+            afaResult = theStore.UIOtoAfA({textFont: "arial"});
+            jqUnit.assertEquals("Font name for 'verdana'", "Arial", afaResult.display.screenEnhancement.fontFace.fontName[0]);
+            jqUnit.assertEquals("Font face for 'verdana'", "sans serif", afaResult.display.screenEnhancement.fontFace.genericFontFace);
+
+            afaResult = theStore.UIOtoAfA({textFont: "comic"});
+            jqUnit.assertEquals("Font name for 'verdana'", "Comic Sans", afaResult.display.screenEnhancement.fontFace.fontName[0]);
             jqUnit.assertEquals("Font face for 'verdana'", "sans serif", afaResult.display.screenEnhancement.fontFace.genericFontFace);
 
             afaResult = theStore.UIOtoAfA({textFont: "default"});
@@ -324,6 +344,10 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             jqUnit.assertEquals("language", expectedUIO.language, uioResult.language);
         });
 
+        tests.test("AfA caption and transcript language different", function () {
+            jqUnit.assertFalse("No tests yet", true);
+        });
+
         /**
          * Theme tests
          */
@@ -387,12 +411,18 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             jqUnit.assertUndefined("No results for default setting", afaResult.display.screenEnhancement.backgroundColor);
         });
 
-        tests.test("AfA caption and transcript language different", function () {
-            jqUnit.assertFalse("No tests yet", true);
-        });
-
         tests.test("Extra settings preserved", function () {
-            jqUnit.assertFalse("No tests yet", true);
+            var testAfASettings = {
+                "display": {
+                    "screenEnhancement": {
+                        "magnification": 2.0,
+                        "tracking": "mouse",
+                    }
+                }
+            };
+            var roundTrip = theStore.UIOtoAfA(theStore.AfAtoUIO(testAfASettings));
+            jqUnit.assertEquals("Unsupported settings are preserved", testAfASettings.display.screenEnhancement.magnification, roundTrip.display.screenEnhancement.magnification);
+            jqUnit.assertEquals("Unsupported settings are preserved", testAfASettings.display.screenEnhancement.tracking, roundTrip.display.screenEnhancement.tracking);
         });
     });
 })(jQuery);
