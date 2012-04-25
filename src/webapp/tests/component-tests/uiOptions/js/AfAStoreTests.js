@@ -54,6 +54,18 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                     foregroundColor: "yellow", // what format should these be?
                     backgroundColor: "black",  // hex? rgb? css strings?
                     invertColourChoice: false
+                },
+                // this would be  necessary to preserve the non-AfA-supported UIO settings
+                application: {
+                    name: "UI Options",
+                    id: "fluid.uiOptions",
+                    parameters: {
+                        lineSpacing: "1.4",
+                        links: true,
+                        inputsLarger: true,
+                        layout: true,
+                        volume: "42"
+                    }
                 }
             },
             control: {
@@ -409,7 +421,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             jqUnit.assertUndefined("No results for default setting", afaResult.display.screenEnhancement.backgroundColor);
         });
 
-        tests.test("Extra settings preserved", function () {
+        tests.test("Extra AfA settings preserved", function () {
             var testAfASettings = {
                 "display": {
                     "screenEnhancement": {
@@ -419,8 +431,24 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                 }
             };
             var roundTrip = theStore.UIOtoAfA(theStore.AfAtoUIO(testAfASettings));
-            jqUnit.assertEquals("Unsupported settings are preserved", testAfASettings.display.screenEnhancement.magnification, roundTrip.display.screenEnhancement.magnification);
-            jqUnit.assertEquals("Unsupported settings are preserved", testAfASettings.display.screenEnhancement.tracking, roundTrip.display.screenEnhancement.tracking);
+            jqUnit.assertEquals("Unsupported AfA settings are preserved", testAfASettings.display.screenEnhancement.magnification, roundTrip.display.screenEnhancement.magnification);
+            jqUnit.assertEquals("Unsupported AfA settings are preserved", testAfASettings.display.screenEnhancement.tracking, roundTrip.display.screenEnhancement.tracking);
+        });
+
+        tests.test("Extra UIO settings preserved", function () {
+            var unsupportedUIOSettings = {
+                lineSpacing: 1.4,
+                links: true,
+                inputsLarger: true,
+                layout: true,
+                volume: 42
+            };
+            var roundTrip = theStore.AfAtoUIO(theStore.UIOtoAfA(unsupportedUIOSettings));
+            jqUnit.assertEquals("line spacing preserved", unsupportedUIOSettings.lineSpacing, roundTrip.lineSpacing);
+            jqUnit.assertEquals("links preserved", unsupportedUIOSettings.links, roundTrip.links);
+            jqUnit.assertEquals("inputs larger preserved", unsupportedUIOSettings.inputsLarger, roundTrip.inputsLarger);
+            jqUnit.assertEquals("layout preserved", unsupportedUIOSettings.layout, roundTrip.layout);
+            jqUnit.assertEquals("volume spacing preserved", unsupportedUIOSettings.volume, roundTrip.volume);
         });
     });
 })(jQuery);
