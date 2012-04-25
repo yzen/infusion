@@ -224,10 +224,15 @@ var fluid_1_5 = fluid_1_5 || {};
             uiOptions: {
                 options: {
                     components: {
-                        settingsStore: "{uiEnhancer}.settingsStore"
+                        settingsStore: "{uiEnhancer}.settingsStore",
+                        uiEnhancer: "{uiEnhancer}"
                     },
                     listeners: {
-                        onUIOptionsRefresh: "{uiEnhancer}.updateFromSettingsStore"
+                        onUpdateUIEnhancerModel: "{uiEnhancer}.updateFromSettingsStore"
+//                        onUIOptionsRefresh: {
+//                            listener: "{uiEnhancer}.updateFromSettingsStore",
+//                            priority: "first"
+//                        }
                     }
                 }
             }
@@ -525,6 +530,7 @@ var fluid_1_5 = fluid_1_5 || {};
             onReset: null,
             onAutoSave: null,
             modelChanged: null,
+            onUpdateUIEnhancerModel: null,
             onUIOptionsRefresh: null,
             onUIOptionsMarkupReady: null,
             onUIOptionsComponentReady: null,
@@ -569,9 +575,11 @@ var fluid_1_5 = fluid_1_5 || {};
     
     fluid.uiOptions.preInit = function (that) {
         that.fetch = function () {
-            var initialModel = that.settingsStore.fetch();
-            initialModel = $.extend(true, {}, that.defaultModel, initialModel);
+            that.events.onUpdateUIEnhancerModel.fire();
+            
+            var initialModel = $.extend(true, {}, that.defaultModel, that.uiEnhancer.model);
             that.updateModel(initialModel);
+            
             that.events.onUIOptionsRefresh.fire();
         };
 
@@ -587,6 +595,7 @@ var fluid_1_5 = fluid_1_5 || {};
         
         that.saveAndApply = function () {
             that.save();
+            that.events.onUpdateUIEnhancerModel.fire();
             that.events.onUIOptionsRefresh.fire();
         };
 
@@ -596,6 +605,7 @@ var fluid_1_5 = fluid_1_5 || {};
         that.reset = function () {
             that.updateModel(fluid.copy(that.defaultModel));
             that.events.onReset.fire(that);
+            that.events.onUpdateUIEnhancerModel.fire();
             that.events.onUIOptionsRefresh.fire();
         };
         
@@ -628,6 +638,14 @@ var fluid_1_5 = fluid_1_5 || {};
     };
 
     fluid.uiOptions.finalInit = function (that) {
+//        that.settingsStore.events.settingsReady.addListener(function (initialModel) {
+//            console.log("model fetched: " + initialModel);
+//            initialModel = $.extend(true, {}, that.defaultModel, initialModel);
+//            that.updateModel(initialModel);
+//            that.settingsStore.events.settingsReady.removeListener("initialFetchResponse");
+//            that.events.onUIOptionsRefresh.fire();
+//        }, "initialFetchResponse");
+
         fluid.fetchResources(that.options.resources, function () {
           // This setTimeout is to ensure that fetching of resources is asynchronous,
           // and so that component construction does not run ahead of subcomponents for FatPanel
