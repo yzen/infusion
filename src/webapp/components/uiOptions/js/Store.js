@@ -22,6 +22,9 @@ var fluid_1_5 = fluid_1_5 || {};
     
     fluid.defaults("fluid.uiOptions.store", {
         gradeNames: ["fluid.eventedComponent", "autoInit"],
+        events: {
+            settingsReady: null
+        },
         defaultSiteSettings: {
         // TODO: Note that since antification is not complete, this information now
         // duplicates that kept within the "halfway ants" which are registered as the panels
@@ -52,7 +55,7 @@ var fluid_1_5 = fluid_1_5 || {};
         invokers: {
             fetch: {
                 funcName: "fluid.cookieStore.fetch",
-                args: ["{cookieStore}.options.cookie.name", "{cookieStore}.options.defaultSiteSettings"]
+                args: ["{cookieStore}.options.cookie.name", "{cookieStore}.options.defaultSiteSettings", "{cookieStore}.events.settingsReady"]
             },
             save: {
                 funcName: "fluid.cookieStore.save",
@@ -69,7 +72,7 @@ var fluid_1_5 = fluid_1_5 || {};
     /**
      * Retrieve and return the value of the cookie
      */
-    fluid.cookieStore.fetch = function (cookieName, defaults) {
+    fluid.cookieStore.fetch = function (cookieName, defaults, settingsReadyEvent) {
         var cookie = document.cookie;
         var cookiePrefix = cookieName + "=";
         var retObj, startIndex, endIndex;
@@ -86,7 +89,7 @@ var fluid_1_5 = fluid_1_5 || {};
             } 
         }
         
-        return $.extend(true, {}, defaults, retObj);
+        settingsReadyEvent.fire($.extend(true, {}, defaults, retObj));
     };
     
     /**
@@ -147,7 +150,7 @@ var fluid_1_5 = fluid_1_5 || {};
     };
     
     fluid.tempStore.fetch = function (that) {
-        return that.model;
+        that.events.settingsReady.fire(that.model);
     };
 
     fluid.tempStore.save = function (settings, that) {

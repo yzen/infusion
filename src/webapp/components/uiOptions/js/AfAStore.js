@@ -50,8 +50,7 @@ var fluid_1_5 = fluid_1_5 || {};
             }
         },
         events: {
-            rulesReady: null,
-            settingsReady: null
+            rulesReady: null
         },
         rulesURL: "../AfATransformRules/",
         prefsServerURL: "http://localhost:8080/store/",
@@ -98,7 +97,8 @@ var fluid_1_5 = fluid_1_5 || {};
     fluid.afaStore.fetch = function (that) {
         $.get(fluid.afaStore.getServerURL(that.options.prefsServerURL, that.options.userToken), function (data) {
             that.originalPrefs = data;
-            that.events.settingsReady.fire(that.AfAtoUIO(data));
+            
+            that.events.settingsReady.fire($.extend(true, {}, that.options.defaultSiteSettings, that.AfAtoUIO(data)));
         });
     };
 
