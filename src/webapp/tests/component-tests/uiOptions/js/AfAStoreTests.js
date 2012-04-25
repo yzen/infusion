@@ -77,9 +77,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
 
         var tests = new jqUnit.TestCase("Access for All Store Tests");
 
-        var theStore = fluid.afaStore({
-            rulesURL: "../../../../components/uiOptions/AfATransformRules/"
-        });
+        var theStore = fluid.afaStore();
 
         /**
          * Test text size

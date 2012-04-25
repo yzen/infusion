@@ -30,7 +30,6 @@ var fluid_1_5 = fluid_1_5 || {};
      */
     fluid.defaults("fluid.afaStore", {
         gradeNames: ["fluid.uiOptions.store", "autoInit"],
-        finalInitFunction: "fluid.afaStore.finalInit",
         invokers: {
             fetch: {
                 funcName: "fluid.afaStore.fetch",
@@ -52,47 +51,13 @@ var fluid_1_5 = fluid_1_5 || {};
         events: {
             rulesReady: null
         },
-        rulesURL: "../AfATransformRules/",
         prefsServerURL: "http://localhost:8080/store/",
         userToken: "123"
     });
 
-    var resources = {
-        AfAtoUIOrules: {
-            href: "AfAtoUIOrules.json",
-            options: {
-                dataType: "json"
-            }
-        },
-        AfAtoUIOAdaptPrefRules: {
-            href: "AfAtoUIOAdaptPrefRules.json",
-            options: {
-                dataType: "json"
-            }
-        },
-        UIOtoAfArules: {
-            href: "UIOtoAfArules.json",
-            options: {
-                dataType: "json"
-            }
-        }
-    };
-
-    fluid.afaStore.finalInit = function (that) {
-        fluid.each(resources, function (value, key) {
-            value.href = that.options.rulesURL + value.href;
-        });
-        fluid.fetchResources(resources, function () {
-            fluid.each(resources, function (value, key) {
-                that[key] = resources[key].resourceText;
-            });
-            that.events.rulesReady.fire();
-        });
-    };
-
     fluid.afaStore.getServerURL = function (prefsServerURL, userToken) {
         return prefsServerURL + userToken;
-    }
+    };
     
     fluid.afaStore.fetch = function (that) {
         $.get(fluid.afaStore.getServerURL(that.options.prefsServerURL, that.options.userToken), function (data) {
@@ -116,18 +81,18 @@ var fluid_1_5 = fluid_1_5 || {};
 
     fluid.afaStore.AfAtoUIO = function (settings, that) {
         return fluid.model.transformWithRules(settings, [
-            that.AfAtoUIOAdaptPrefRules,
-            that.AfAtoUIOrules
+            fluid.afaStore.AfAtoUIOAdaptPrefRules,
+            fluid.afaStore.AfAtoUIOrules
         ]);
     };
     
     fluid.afaStore.UIOtoAfA = function (settings, that) {
-        return fluid.model.transformWithRules(settings, that.UIOtoAfArules);
+        return fluid.model.transformWithRules(settings, fluid.afaStore.UIOtoAfArules);
     };
 
-    /*********************
+    /**********************************************
      * Model Transformers
-     *********************/
+     **********************************************/
     fluid.registerNamespace("fluid.afaStore.transform");
 
     /**
@@ -139,7 +104,7 @@ var fluid_1_5 = fluid_1_5 || {};
     fluid.afaStore.transform.valueMapper = function (model, expandSpec, recurse) {
         var val = fluid.get(model, expandSpec.path);
         
-        if (typeof(val) !== "undefined") {
+        if (typeof val !== "undefined") {
             return expandSpec.valueMap[val];
         }
     };
@@ -177,17 +142,17 @@ var fluid_1_5 = fluid_1_5 || {};
     /**
      * Intermediate process: flatten the array of adaptationPreferences
      */
-    fluid.afaStore.transform.flattenAdaptPrefs = function (model,expandSpec, recurse) {
+    fluid.afaStore.transform.flattenAdaptPrefs = function (model, expandSpec, recurse) {
         var adaptPrefs = fluid.get(model, expandSpec.path);
         if (!adaptPrefs) {
             return {};
         }
-        result = {};
+        var result = {};
         fluid.each(adaptPrefs, function (value, key) {
             if (value.adaptationType === "caption" && !result.captions) {
                 result.captions = true;
                 result.language = value.language;
-            } else if (value.representationForm && $.inArray("transcript", value.representationForm) !== -1){
+            } else if (value.representationForm && $.inArray("transcript", value.representationForm) !== -1) {
                 result.transcripts = true;
                 if (!result.language) {
                     result.language = value.language;
@@ -204,19 +169,19 @@ var fluid_1_5 = fluid_1_5 || {};
     /**
      * 
      */
-    fluid.afaStore.transform.fontFactor = function (model,expandSpec, recurse) {
+    fluid.afaStore.transform.fontFactor = function (model, expandSpec, recurse) {
         var val = fluid.get(model, expandSpec.path);
         if (!val) {
             return {};
         }
 
-        return (Math.round(parseFloat(val / baseDocumentFontSize()) * 10) /10).toString();
+        return (Math.round(parseFloat(val / baseDocumentFontSize()) * 10) / 10).toString();
     };
 
     /**
      * 
      */
-    fluid.afaStore.transform.fontSize = function (model,expandSpec, recurse) {
+    fluid.afaStore.transform.fontSize = function (model, expandSpec, recurse) {
         var val = fluid.get(model, expandSpec.path);
         if (!val) {
             return {};
@@ -236,16 +201,161 @@ var fluid_1_5 = fluid_1_5 || {};
             white: "bw",
             yellow: "by"
         }
-    }
+    };
     /**
      * Convert a foreground/background colour combination into a theme name.
      * Assumptions: If one of the colours is not specified, we cannot identify a theme.
      */
-    fluid.afaStore.transform.coloursToTheme = function (model,expandSpec, recurse) {
+    fluid.afaStore.transform.coloursToTheme = function (model, expandSpec, recurse) {
         var fg = fluid.get(model, expandSpec.fgpath);
         var bg = fluid.get(model, expandSpec.bgpath);
         if (colourTable[fg]) {
             return colourTable[fg][bg];
+        }
+    };
+
+    /**********************************************
+     * Transformation Rules
+     **********************************************/
+
+    fluid.afaStore.AfAtoUIOrules = {
+        "textFont": {
+            "expander": {
+                "type": "fluid.afaStore.transform.valueMapper",
+                "path": "display.screenEnhancement.fontFace.genericFontFace",
+                "_comment": "TODO: For now, this ignores the actual 'fontName' setting",
+                "valueMap": {
+                    "serif": "times",
+                    "sans serif": "verdana",
+                    "monospaced": "default",
+                    "fantasy": "default",
+                    "cursive": "default"
+                }
+            }
+        },
+        "textSize": {
+            "expander": {
+                "type": "fluid.afaStore.transform.fontFactor",
+                "path": "display.screenEnhancement.fontSize"
+            }
+        },
+        "toc": {
+            "expander": {
+                "type": "fluid.model.transform.value",
+                "path": "control.structuralNavigation.tableOfContents"
+            }
+        },
+        "captions": {
+            "expander": {
+                "type": "fluid.model.transform.value",
+                "path": "flatAdaptationPreferences.captions"
+            }
+        },
+        "transcripts": {
+            "expander": {
+                "type": "fluid.model.transform.value",
+                "path": "flatAdaptationPreferences.transcripts"
+            }
+        },
+        "language": {
+            "expander": {
+                "type": "fluid.model.transform.value",
+                "path": "flatAdaptationPreferences.language"
+            }
+        },
+        "theme": {
+            "expander": {
+                "type": "fluid.afaStore.transform.coloursToTheme",
+                "fgpath": "display.screenEnhancement.foregroundColor",
+                "bgpath": "display.screenEnhancement.backgroundColor"
+            }
+        }
+    };
+
+    fluid.afaStore.AfAtoUIOAdaptPrefRules = {
+        "flatAdaptationPreferences": {
+            "expander": {
+                "type": "fluid.afaStore.transform.flattenAdaptPrefs",
+                "path": "content.adaptationPreference"
+            }
+        },
+        "display": "display",
+        "control": "control"
+    };
+
+    fluid.afaStore.UIOtoAfArules = {
+        "display.screenEnhancement.fontFace": {
+            "expander": {
+                "type": "fluid.afaStore.transform.valueMapper",
+                "path": "textFont",
+                "valueMap": {
+                    "times": {
+                        "fontName": ["Times New Roman"],
+                        "genericFontFace": "serif"
+                    },
+                    "verdana": {
+                        "fontName": ["Verdana"],
+                        "genericFontFace": "sans serif"
+                    },
+                    "arial": {
+                        "fontName": ["Arial"],
+                        "genericFontFace": "sans serif"
+                    },
+                    "comic": {
+                        "fontName": ["Comic Sans"],
+                        "genericFontFace": "sans serif"
+                    }
+                }
+            }
+        },
+        "display.screenEnhancement.fontSize": {
+            "expander": {
+                "type": "fluid.afaStore.transform.fontSize",
+                "path": "textSize"
+            }
+        },
+        "control.structuralNavigation.tableOfContents": {
+            "expander": {
+                "type": "fluid.model.transform.value",
+                "path": "toc"
+            }
+        },
+        "content.adaptationPreference.0": {
+            "expander": {
+                "type": "fluid.afaStore.transform.afaCaption",
+                "path": "captions"
+            }
+        },
+        "_comment": "NB: This will always place transcripts second in the array, even if there are no captions",
+        "content.adaptationPreference.1": {
+            "expander": {
+                "type": "fluid.afaStore.transform.afaTranscript",
+                "path": "transcripts"
+            }
+        },
+        "display.screenEnhancement.foregroundColor": {
+            "expander": {
+                "type": "fluid.afaStore.transform.valueMapper",
+                "path": "theme",
+                "valueMap": {
+                    "yb": "yellow",
+                    "by": "black",
+                    "wb": "white",
+                    "bw": "black"
+                }
+            }
+        },
+        "display.screenEnhancement.backgroundColor": {
+            "expander": {
+                "type": "fluid.afaStore.transform.valueMapper",
+                "path": "theme",
+                "valueMap": {
+                    "yb": "black",
+                    "by": "yellow",
+                    "wb": "black",
+                    "bw": "white"
+                }
+            }
         }
     };
 })(jQuery, fluid_1_5);
