@@ -48,9 +48,6 @@ var fluid_1_5 = fluid_1_5 || {};
                 args: ["{arguments}.0"]
             }
         },
-        events: {
-            settingsReady: null
-        },
         prefsServerURL: "http://localhost:8080/store/",
         userToken: "123"
     });
@@ -62,7 +59,8 @@ var fluid_1_5 = fluid_1_5 || {};
     fluid.afaStore.fetch = function (that) {
         $.get(fluid.afaStore.getServerURL(that.options.prefsServerURL, that.options.userToken), function (data) {
             that.originalPrefs = data;
-            that.events.settingsReady.fire(that.AfAtoUIO(data));
+            
+            that.events.settingsReady.fire($.extend(true, {}, that.options.defaultSiteSettings, that.AfAtoUIO(data)));
         });
     };
 
