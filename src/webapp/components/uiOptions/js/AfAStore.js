@@ -61,8 +61,6 @@ var fluid_1_5 = fluid_1_5 || {};
     
     fluid.afaStore.fetch = function (that) {
         $.get(fluid.afaStore.getServerURL(that.options.prefsServerURL, that.options.userToken), function (data) {
-            that.originalPrefs = data;
-            
             that.events.settingsReady.fire($.extend(true, {}, that.options.defaultSiteSettings, that.AfAtoUIO(data)));
         });
     };
@@ -80,6 +78,9 @@ var fluid_1_5 = fluid_1_5 || {};
     };
 
     fluid.afaStore.AfAtoUIO = function (settings, that) {
+        // Save the original AfA settings in order to preserve UIO unsupported AfA preferences
+        that.originalAfAPrefs = settings;
+        
         return fluid.model.transformWithRules(settings, [
             fluid.afaStore.AfAtoUIOAdaptPrefRules,
             fluid.afaStore.AfAtoUIOrules
@@ -87,7 +88,13 @@ var fluid_1_5 = fluid_1_5 || {};
     };
     
     fluid.afaStore.UIOtoAfA = function (settings, that) {
-        return fluid.model.transformWithRules(settings, fluid.afaStore.UIOtoAfArules);
+        var UIOTransformedSettings = fluid.model.transformWithRules(settings, [
+            fluid.afaStore.UIOtoAfArules,
+            fluid.afaStore.UIOtoAfAUIOApprules
+        ]);
+        
+        // Preserve the AfA preferences that are not UIO supported
+        return $.extend(true, {}, that.originalAfAPrefs, UIOTransformedSettings);
     };
 
     /**********************************************
@@ -213,6 +220,34 @@ var fluid_1_5 = fluid_1_5 || {};
             return colourTable[fg][bg];
         }
     };
+    
+    /**
+     * Convert AfA-unsupported UIO settings into AfA preference string.
+     */
+    fluid.afaStore.transform.afaUnSupportedUIOSettings = function (model, expandSpec, recurse) {
+        var val = fluid.get(model, expandSpec.path);
+        if (!val) {
+            return {};
+        }
+        
+        return typeof val === "number" ? val.toString() : val;
+    };
+    
+    /**
+     * Complete the node for preserving AfA-unsupported UIO settings
+     */
+    fluid.afaStore.transform.fleshOutUIOSettings = function (model, expandSpec, recurse) {
+        var fullVal = fluid.get(model, expandSpec.path);
+        var val = fluid.get(fullVal, "application.parameters");
+        if (!val) {
+            return fullVal;
+        }
+        
+        fullVal.application["name"] = "UI Options";
+        fullVal.application["id"] = "fluid.uiOptions";
+        
+        return fullVal;
+    };
 
     /**********************************************
      * Transformation Rules
@@ -269,7 +304,12 @@ var fluid_1_5 = fluid_1_5 || {};
                 "fgpath": "display.screenEnhancement.foregroundColor",
                 "bgpath": "display.screenEnhancement.backgroundColor"
             }
-        }
+        },
+        "lineSpacing": "display.application.parameters.lineSpacing",
+        "links": "display.application.parameters.links",
+        "inputsLarger": "display.application.parameters.inputsLarger",
+        "layout": "display.application.parameters.layout",
+        "volume": "display.application.parameters.volume"
     };
 
     fluid.afaStore.AfAtoUIOAdaptPrefRules = {
@@ -355,6 +395,47 @@ var fluid_1_5 = fluid_1_5 || {};
                     "wb": "black",
                     "bw": "white"
                 }
+            }
+        },
+        "display.application.parameters.lineSpacing": {
+            "expander": {
+                "type": "fluid.afaStore.transform.afaUnSupportedUIOSettings",
+                "path": "lineSpacing"
+            }
+        },
+        "display.application.parameters.links": {
+            "expander": {
+                "type": "fluid.afaStore.transform.afaUnSupportedUIOSettings",
+                "path": "links"
+            }
+        },
+        "display.application.parameters.inputsLarger": {
+            "expander": {
+                "type": "fluid.afaStore.transform.afaUnSupportedUIOSettings",
+                "path": "inputsLarger"
+            }
+        },
+        "display.application.parameters.layout": {
+            "expander": {
+                "type": "fluid.afaStore.transform.afaUnSupportedUIOSettings",
+                "path": "layout"
+            }
+        },
+        "display.application.parameters.volume": {
+            "expander": {
+                "type": "fluid.afaStore.transform.afaUnSupportedUIOSettings",
+                "path": "volume"
+            }
+        }
+    };
+    
+    fluid.afaStore.UIOtoAfAUIOApprules = {
+        "control": "control",
+        "content": "content",
+        "display": {
+            "expander": {
+                "type": "fluid.afaStore.transform.fleshOutUIOSettings",
+                "path": "display"
             }
         }
     };

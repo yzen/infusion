@@ -89,13 +89,13 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
 
         var tests = new jqUnit.TestCase("Access for All Store Tests");
 
-        var theStore = fluid.afaStore();
-
         /**
          * Test text size
          */
 
         tests.test("UIO to AFA: text size", function () {
+            var theStore = fluid.afaStore();
+
             // Size set in HTML is 20px
             var afaResult = theStore.UIOtoAfA({textSize: "1.6"});
             jqUnit.assertEquals("Size converts properly", 32, afaResult.display.screenEnhancement.fontSize);
@@ -108,6 +108,8 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         });
 
         tests.test("AfA to UIO: text size", function () {
+            var theStore = fluid.afaStore();
+
             var afaSettings = {
                 display: {
                     screenEnhancement: {
@@ -129,6 +131,8 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
          */
 
         tests.test("UIO to AfA: fonts", function () {
+            var theStore = fluid.afaStore();
+
             var afaResult = theStore.UIOtoAfA({textFont: "times"});
             jqUnit.assertEquals("Font name for 'times'", "Times New Roman", afaResult.display.screenEnhancement.fontFace.fontName[0]);
             jqUnit.assertEquals("Font face for 'times'", "serif", afaResult.display.screenEnhancement.fontFace.genericFontFace);
@@ -148,7 +152,10 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             afaResult = theStore.UIOtoAfA({textFont: "default"});
             jqUnit.assertUndefined("No result for 'default'", afaResult.screenEnhancement);
         });
+
         tests.test("AfA to UIO: fonts", function () {
+            var theStore = fluid.afaStore();
+
             var afaFontFamilySettings = {
                 display: {
                     screenEnhancement: {
@@ -187,6 +194,8 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
          */
 
         tests.test("UIO to AfA: Table of contents", function () {
+            var theStore = fluid.afaStore();
+
             var afaResult = theStore.UIOtoAfA({toc: true});
             jqUnit.assertEquals("Table of contents on", true, afaResult.control.structuralNavigation.tableOfContents);
 
@@ -196,7 +205,10 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             var afaResult = theStore.UIOtoAfA({});
             jqUnit.assertUndefined("no result for no setting", afaResult.control);
         });
+
         tests.test("AfA to UIO: Table of contents", function () {
+            var theStore = fluid.afaStore();
+
             var afaTocSettings = {
                 control: {
                     structuralNavigation: {
@@ -219,6 +231,8 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
          *  Test caption transformations
          */
         tests.test("UIO to AfA: Captions", function () {
+            var theStore = fluid.afaStore();
+
             var uioCaptions = {
                 captions: true,
                 language: "fr"
@@ -241,7 +255,10 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             afaResult = theStore.UIOtoAfA({});
             jqUnit.assertDeepEq("Empty object for no setting", {}, afaResult.content.adaptationPreference[0]);
         });
+
         tests.test("AfA to UIO: Captions", function () {
+            var theStore = fluid.afaStore();
+
             var afaCaptions = {
                 content: {
                     adaptationPreference: [{
@@ -264,6 +281,8 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
          */
 
         tests.test("UIO to AfA: Transcripts", function () {
+            var theStore = fluid.afaStore();
+
             var uioTranscripts = {
                 transcripts: true,
                 language: "es"
@@ -286,7 +305,10 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             afaResult = theStore.UIOtoAfA({});
             jqUnit.assertDeepEq("Empty object for no setting", {}, afaResult.content.adaptationPreference[1]);
         });
+
         tests.test("AfA to UIO: Transcripts", function () {
+            var theStore = fluid.afaStore();
+
             var afaTranscript = {
                 content: {
                     adaptationPreference: [{
@@ -309,6 +331,8 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
          * Test both captions and transcripts
          */
         tests.test("UIO to AfA: Captions and Transcripts", function () {
+            var theStore = fluid.afaStore();
+
             var uioCaptions = {
                 captions: true,
                 transcripts: true,
@@ -331,7 +355,10 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             jqUnit.assertEquals("representation form", expectedAfa.content.adaptationPreference[1].representationForm[0], afaResult.content.adaptationPreference[1].representationForm[0]);
             jqUnit.assertEquals("Transcript language", expectedAfa.content.adaptationPreference[1].language, afaResult.content.adaptationPreference[1].language);
         });
+
         tests.test("AfA to UIO: Captions and Transcripts", function () {
+            var theStore = fluid.afaStore();
+
             var expectedUIO = {
                 captions: true,
                 transcripts: true,
@@ -355,6 +382,8 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         });
 
         tests.test("AfA caption and transcript language different", function () {
+            var theStore = fluid.afaStore();
+
             jqUnit.assertFalse("No tests yet", true);
         });
 
@@ -362,6 +391,8 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
          * Theme tests
          */
         tests.test("AfA to UIO: theme", function () {
+            var theStore = fluid.afaStore();
+
             var testAfA = {
                 display: {
                     screenEnhancement: {
@@ -400,6 +431,8 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         });
 
         tests.test("UIO to AfA: theme", function () {
+            var theStore = fluid.afaStore();
+
             var afaResult = theStore.UIOtoAfA({theme: "yb"});
             jqUnit.assertEquals("YB Foreground", "yellow", afaResult.display.screenEnhancement.foregroundColor);
             jqUnit.assertEquals("YB Background", "black", afaResult.display.screenEnhancement.backgroundColor);
@@ -421,21 +454,34 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             jqUnit.assertUndefined("No results for default setting", afaResult.display.screenEnhancement.backgroundColor);
         });
 
-        tests.test("Extra AfA settings preserved", function () {
+        tests.test("Extra AfA settings preserved and new UIO settings take precedence", function () {
+            var theStore = fluid.afaStore();
+
             var testAfASettings = {
                 "display": {
                     "screenEnhancement": {
                         "magnification": 2.0,
                         "tracking": "mouse",
+                        "fontSize": 10
                     }
                 }
             };
-            var roundTrip = theStore.UIOtoAfA(theStore.AfAtoUIO(testAfASettings));
-            jqUnit.assertEquals("Unsupported AfA settings are preserved", testAfASettings.display.screenEnhancement.magnification, roundTrip.display.screenEnhancement.magnification);
-            jqUnit.assertEquals("Unsupported AfA settings are preserved", testAfASettings.display.screenEnhancement.tracking, roundTrip.display.screenEnhancement.tracking);
+            var testUIOSettings = {
+                textSize: 1
+            };
+
+            var convertedUIOSettings = theStore.AfAtoUIO(testAfASettings);
+            jqUnit.assertEquals("Supported AfA setting fontSize is converted", 0.5, convertedUIOSettings.textSize);
+            
+            var finalAfASettings = theStore.UIOtoAfA(testUIOSettings);
+            jqUnit.assertEquals("Unsupported AfA settings are preserved", testAfASettings.display.screenEnhancement.magnification, finalAfASettings.display.screenEnhancement.magnification);
+            jqUnit.assertEquals("Unsupported AfA settings are preserved", testAfASettings.display.screenEnhancement.tracking, finalAfASettings.display.screenEnhancement.tracking);
+            jqUnit.assertEquals("The new UIO setting for fontSize takes precedence", 20, finalAfASettings.display.screenEnhancement.fontSize);
         });
 
         tests.test("Extra UIO settings preserved", function () {
+            var theStore = fluid.afaStore();
+
             var unsupportedUIOSettings = {
                 lineSpacing: 1.4,
                 links: true,
@@ -443,6 +489,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                 layout: true,
                 volume: 42
             };
+            
             var roundTrip = theStore.AfAtoUIO(theStore.UIOtoAfA(unsupportedUIOSettings));
             jqUnit.assertEquals("line spacing preserved", unsupportedUIOSettings.lineSpacing, roundTrip.lineSpacing);
             jqUnit.assertEquals("links preserved", unsupportedUIOSettings.links, roundTrip.links);
