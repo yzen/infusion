@@ -93,6 +93,15 @@ var fluid_1_5 = fluid_1_5 || {};
             fluid.afaStore.UIOtoAfAUIOApprules
         ]);
         
+        // Remove the original AfA preferences that are supposed to be transformed from UIO
+        // so that the empty AfA settings won't re-filled by the original ones.
+        fluid.each(fluid.afaStore.UIOtoAfArules, function (garbage, path) {
+            path = path.replace(".0", "[0]");
+            path = path.replace(".1", "[1]");
+            
+            eval("delete that.originalAfAPrefs." + path);
+        })
+        
         // Preserve the AfA preferences that are not UIO supported
         return $.extend(true, {}, that.originalAfAPrefs, UIOTransformedSettings);
     };
@@ -226,7 +235,7 @@ var fluid_1_5 = fluid_1_5 || {};
      */
     fluid.afaStore.transform.afaUnSupportedUIOSettings = function (model, expandSpec, recurse) {
         var val = fluid.get(model, expandSpec.path);
-        if (!val) {
+        if (!val && val !== false) {
             return {};
         }
         
