@@ -27,7 +27,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         // On the other hand, when creating a UIO settings object, we don't need to create all of them
         var testUIOSettingsAll = {
             // NOTE: settings that AfA doesn't support still need to be preserved
-            textSize: "1.6",
+            textSize: 1.6,
             textFont: "times",
             theme: "yb",
             lineSpacing: 1.4,
@@ -50,7 +50,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                         fontName: ["Times New Roman"], // necessary?
                         genericFontFace: "serif"
                     },
-                    fontSize: 19.2,
+                    fontSize: 32,
                     foregroundColor: "yellow", // what format should these be?
                     backgroundColor: "black",  // hex? rgb? css strings?
                     invertColourChoice: false
@@ -77,7 +77,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                 adaptationPreference: [{
                     adaptationType: "caption",
                     language: "fr"
-                },{
+                }, {
                     representationForm: ["transcript"],
                     language: "fr"
                 }]
@@ -199,10 +199,10 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             var afaResult = theStore.UIOtoAfA({toc: true});
             jqUnit.assertEquals("Table of contents on", true, afaResult.control.structuralNavigation.tableOfContents);
 
-            var afaResult = theStore.UIOtoAfA({toc: false});
+            afaResult = theStore.UIOtoAfA({toc: false});
             jqUnit.assertEquals("Table of contents off", false, afaResult.control.structuralNavigation.tableOfContents);
 
-            var afaResult = theStore.UIOtoAfA({});
+            afaResult = theStore.UIOtoAfA({});
             jqUnit.assertUndefined("no result for no setting", afaResult.control);
         });
 
@@ -242,7 +242,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                     adaptationPreference: [{
                         adaptationType: "caption",
                         language: "fr"
-                    },{
+                    }, {
                         // for now we assume there are always two adaptationPreferences,
                         // and first one is captions
                     }]
@@ -292,7 +292,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                     adaptationPreference: [{
                         // for now we assume there are always two adaptationPreferences,
                         // and second one is captions
-                    },{
+                    }, {
                         representationForm: ["transcript"],
                         language: "es"
                     }]
@@ -343,7 +343,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                     adaptationPreference: [{
                         adaptationType: "caption",
                         language: "eo"
-                    },{
+                    }, {
                         representationForm: ["transcript"],
                         language: "eo"
                     }]
@@ -369,7 +369,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                     adaptationPreference: [{
                         adaptationType: "caption",
                         language: "eo"
-                    },{
+                    }, {
                         representationForm: ["transcript"],
                         language: "es"
                     }]
@@ -381,10 +381,38 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             jqUnit.assertEquals("language", expectedUIO.language, uioResult.language);
         });
 
-        tests.test("AfA caption and transcript language different", function () {
+        tests.test("AfA caption and transcript language different: always choose caption language", function () {
             var theStore = fluid.afaStore();
 
-            jqUnit.assertFalse("No tests yet", true);
+            var afaAdaptations = {
+                content: {
+                    adaptationPreference: [{
+                        adaptationType: "caption",
+                        language: "eo"
+                    }, {
+                        representationForm: ["transcript"],
+                        language: "es"
+                    }]
+                }
+            };
+
+            var uioResult = theStore.AfAtoUIO(afaAdaptations);
+            jqUnit.assertEquals("The language for caption is chosen", "eo", uioResult.language);
+
+            afaAdaptations = {
+                content: {
+                    adaptationPreference: [{
+                        representationForm: ["transcript"],
+                        language: "es"
+                    }, {
+                        adaptationType: "caption",
+                        language: "eo"
+                    }]
+                }
+            };
+
+            uioResult = theStore.AfAtoUIO(afaAdaptations);
+            jqUnit.assertEquals("The language for caption is chosen", "eo", uioResult.language);
         });
 
         /**
@@ -496,6 +524,13 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             jqUnit.assertEquals("inputs larger preserved", unsupportedUIOSettings.inputsLarger, roundTrip.inputsLarger);
             jqUnit.assertEquals("layout preserved", unsupportedUIOSettings.layout, roundTrip.layout);
             jqUnit.assertEquals("volume spacing preserved", unsupportedUIOSettings.volume, roundTrip.volume);
+        });
+
+        tests.test("Integration test: AfA to UIO", function () {
+            var theStore = fluid.afaStore();
+
+            var uioResult = theStore.AfAtoUIO(testAfASettingsAll);
+            jqUnit.assertDeepEq("The converted UIO preferences are expected", testUIOSettingsAll, uioResult);
         });
     });
 })(jQuery);
