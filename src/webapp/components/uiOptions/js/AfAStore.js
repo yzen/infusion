@@ -82,6 +82,7 @@ var fluid_1_5 = fluid_1_5 || {};
         that.originalAfAPrefs = settings;
         
         return fluid.model.transformWithRules(settings, [
+            fluid.afaStore.AfAtoUIOScreenEnhanceRules,
             fluid.afaStore.AfAtoUIOAdaptPrefRules,
             fluid.afaStore.AfAtoUIOrules
         ]);
@@ -127,8 +128,12 @@ var fluid_1_5 = fluid_1_5 || {};
         var currentPath = objPath.substring(0, objPath.indexOf(".", numOfSection));
         currentPath = currentPath !== "" ? currentPath : objPath;  // get to the end of the objPath
         
+        // remove the ending array identifier
+        var pathWithoutArray = currentPath.substring(currentPath.length-1) === "]" ?
+                currentPath.substring(0, currentPath.lastIndexOf("[")) : currentPath;
+        
         // ToDo: eval is evil? Need a workaround?
-        if (eval("typeof(targetObj." + currentPath + ")") === "undefined") {
+        if (eval("typeof(targetObj." + pathWithoutArray + ")") === "undefined") {
             return false;
         } else {
             // prevent the continuing loop after the full objPath is checked
@@ -212,6 +217,35 @@ var fluid_1_5 = fluid_1_5 || {};
         return result;
     };
     
+    /**
+     * Intermediate process: remove the screenEnhancement applications that are not UIO specific
+     */
+    fluid.afaStore.transform.simplifyScreenEnhance = function (model, expandSpec, recurse) {
+        var val = fluid.get(model, expandSpec.path);
+        if (!val) {
+            return {};
+        }
+        if (val.applications) {
+            var apps = val.applications;
+            var resultApps = [];
+    
+            for (var i in apps) {
+                var oneApp = apps[i];
+                if (oneApp.name === "UI Options" && oneApp.id === "fluid.uiOptions") {
+                    resultApps.push(oneApp);
+                    break;
+                }
+            }
+            
+            if (resultApps.length > 0) {
+                val.applications = resultApps;  // UIO application is the only element in "applications" array
+            } else {
+                delete val.applications;  // get rid of "applications" element if no UIO specific settings
+            }
+        }
+        return val;
+    };
+    
     var baseDocumentFontSize = function () {
         return parseFloat($("html").css("font-size")); // will be the float # of pixels
     };
@@ -292,13 +326,13 @@ var fluid_1_5 = fluid_1_5 || {};
      */
     fluid.afaStore.transform.fleshOutUIOSettings = function (model, expandSpec, recurse) {
         var fullVal = fluid.get(model, expandSpec.path);
-        var val = fluid.get(fullVal, "application.parameters");
+        var val = fluid.get(fullVal, "screenEnhancement.applications.0.parameters");
         if (!val) {
             return fullVal;
         }
         
-        fullVal.application.name = "UI Options";
-        fullVal.application.id = "fluid.uiOptions";
+        fullVal.screenEnhancement.applications[0].name = "UI Options";
+        fullVal.screenEnhancement.applications[0].id = "fluid.uiOptions";
         
         return fullVal;
     };
@@ -362,16 +396,16 @@ var fluid_1_5 = fluid_1_5 || {};
         "lineSpacing": {
             "expander": {
                 "type": "fluid.afaStore.transform.strToNum",
-                "path": "display.application.parameters.lineSpacing"
+                "path": "display.screenEnhancement.applications.0.parameters.lineSpacing"
             }
         },
-        "links": "display.application.parameters.links",
-        "inputsLarger": "display.application.parameters.inputsLarger",
-        "layout": "display.application.parameters.layout",
+        "links": "display.screenEnhancement.applications.0.parameters.links",
+        "inputsLarger": "display.screenEnhancement.applications.0.parameters.inputsLarger",
+        "layout": "display.screenEnhancement.applications.0.parameters.layout",
         "volume": {
             "expander": {
                 "type": "fluid.afaStore.transform.strToNum",
-                "path": "display.application.parameters.volume"
+                "path": "display.screenEnhancement.applications.0.parameters.volume"
             }
         }
     };
@@ -384,6 +418,17 @@ var fluid_1_5 = fluid_1_5 || {};
             }
         },
         "display": "display",
+        "control": "control"
+    };
+
+    fluid.afaStore.AfAtoUIOScreenEnhanceRules = {
+        "display.screenEnhancement": {
+            "expander": {
+                "type": "fluid.afaStore.transform.simplifyScreenEnhance",
+                "path": "display.screenEnhancement"
+            }
+        },
+        "content": "content",
         "control": "control"
     };
 
@@ -461,31 +506,31 @@ var fluid_1_5 = fluid_1_5 || {};
                 }
             }
         },
-        "display.application.parameters.lineSpacing": {
+        "display.screenEnhancement.applications.0.parameters.lineSpacing": {
             "expander": {
                 "type": "fluid.afaStore.transform.afaUnSupportedUIOSettings",
                 "path": "lineSpacing"
             }
         },
-        "display.application.parameters.links": {
+        "display.screenEnhancement.applications.0.parameters.links": {
             "expander": {
                 "type": "fluid.afaStore.transform.afaUnSupportedUIOSettings",
                 "path": "links"
             }
         },
-        "display.application.parameters.inputsLarger": {
+        "display.screenEnhancement.applications.0.parameters.inputsLarger": {
             "expander": {
                 "type": "fluid.afaStore.transform.afaUnSupportedUIOSettings",
                 "path": "inputsLarger"
             }
         },
-        "display.application.parameters.layout": {
+        "display.screenEnhancement.applications.0.parameters.layout": {
             "expander": {
                 "type": "fluid.afaStore.transform.afaUnSupportedUIOSettings",
                 "path": "layout"
             }
         },
-        "display.application.parameters.volume": {
+        "display.screenEnhancement.applications.0.parameters.volume": {
             "expander": {
                 "type": "fluid.afaStore.transform.afaUnSupportedUIOSettings",
                 "path": "volume"

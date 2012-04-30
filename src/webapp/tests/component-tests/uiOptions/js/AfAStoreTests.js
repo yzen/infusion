@@ -53,19 +53,19 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                     fontSize: 32,
                     foregroundColor: "yellow", // what format should these be?
                     backgroundColor: "black",  // hex? rgb? css strings?
-                    invertColourChoice: false
-                },
-                // this would be  necessary to preserve the non-AfA-supported UIO settings
-                application: {
-                    name: "UI Options",
-                    id: "fluid.uiOptions",
-                    parameters: {
-                        lineSpacing: "1.4",
-                        links: true,
-                        inputsLarger: true,
-                        layout: true,
-                        volume: "42"
-                    }
+                    invertColourChoice: false,  // when should this be set?
+                    // this would be necessary to preserve the non-AfA-supported UIO settings
+                    applications: [{
+                        name: "UI Options",
+                        id: "fluid.uiOptions",
+                        parameters: {
+                            lineSpacing: "1.4",
+                            links: true,
+                            inputsLarger: true,
+                            layout: true,
+                            volume: "42"
+                        }
+                    }]
                 }
             },
             control: {
@@ -482,6 +482,50 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             jqUnit.assertUndefined("No results for default setting", afaResult.display.screenEnhancement.backgroundColor);
         });
 
+        tests.test("Identify UIO specific settings", function () {
+            var theStore = fluid.afaStore();
+
+            var testAfASettings = {
+                "display": {
+                    "screenEnhancement": {
+                        applications: [{
+                            "name": "GNOME Shell Magnifier",
+                            "id": "org.gnome.desktop.a11y.magnifier",
+                            "priority": 100,
+                            "parameters": {
+                                "show-cross-hairs": true
+                            }
+                        }, {
+                            "name": "Windows Magnifier",
+                            "id": "com.microsoft.windows.screenmagnifier",
+                            "priority": 0,
+                            "parameters": {
+                                "MagnifierUIWindowMinimized": 0
+                            }
+                        }, {
+                            name: "UI Options",
+                            id: "fluid.uiOptions",
+                            parameters: {
+                                lineSpacing: "1.4",
+                                layout: true,
+                                volume: "42"
+                            }
+                        }]
+                    }
+                }
+            };
+            // ToDo: should textSize be returned as an empty object?
+            var testUIOSettings = {
+                lineSpacing: 1.4,
+                layout: true,
+                volume: 42,
+                textSize: {}
+            };
+
+            var convertedUIOSettings = theStore.AfAtoUIO(testAfASettings);
+            jqUnit.assertDeepEq("UIO specific settings are converted", testUIOSettings, convertedUIOSettings);
+        });
+
         tests.test("Extra AfA settings preserved and new UIO settings take precedence", function () {
             var theStore = fluid.afaStore();
 
@@ -499,7 +543,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             };
 
             var convertedUIOSettings = theStore.AfAtoUIO(testAfASettings);
-            jqUnit.assertEquals("Supported AfA setting fontSize is converted", 0.5, convertedUIOSettings.textSize);
+            jqUnit.assertDeepEq("Supported AfA setting fontSize is converted", 0.5, convertedUIOSettings.textSize);
             
             var finalAfASettings = theStore.UIOtoAfA(testUIOSettings);
             jqUnit.assertEquals("Unsupported AfA settings are preserved", testAfASettings.display.screenEnhancement.magnification, finalAfASettings.display.screenEnhancement.magnification);
