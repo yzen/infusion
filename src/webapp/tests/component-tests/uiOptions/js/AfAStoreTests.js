@@ -53,18 +53,17 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                     fontSize: 32,
                     foregroundColor: "yellow", // what format should these be?
                     backgroundColor: "black",  // hex? rgb? css strings?
-                    invertColourChoice: false,  // when should this be set?
                     // this would be necessary to preserve the non-AfA-supported UIO settings
                     applications: [{
-                        name: "UI Options",
-                        id: "fluid.uiOptions",
                         parameters: {
                             lineSpacing: "1.4",
                             links: true,
                             inputsLarger: true,
                             layout: true,
                             volume: "42"
-                        }
+                        },
+                        name: "UI Options",
+                        id: "fluid.uiOptions"
                     }]
                 }
             },
@@ -526,7 +525,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             jqUnit.assertDeepEq("UIO specific settings are converted", testUIOSettings, convertedUIOSettings);
         });
 
-        tests.test("Extra AfA settings preserved and new UIO settings take precedence", function () {
+        tests.test("Extra AfA settings preserved or removed & new UIO settings take precedence", function () {
             var theStore = fluid.afaStore();
 
             var testAfASettings = {
@@ -534,21 +533,69 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                     "screenEnhancement": {
                         "magnification": 2.0,
                         "tracking": "mouse",
-                        "fontSize": 10
+                        "fontSize": 10,
+                        "foregroundColor": "yellow",
+                        "backgroundColor": "black",
+                        "applications":[{
+                            "name": "GNOME Shell Magnifier",
+                            "id": "org.gnome.desktop.a11y.magnifier",
+                            "priority": "100",
+                            "parameters": {
+                                "show-cross-hairs": "true"
+                            }
+                        }]
                     }
+                },
+                "content": {
+                    "adaptationPreference": [{
+                        "adaptationType": "caption",
+                        "language": "fr"
+                    }, {
+                        "representationForm": ["transcript"],
+                        "language": "fr"
+                    }]
                 }
             };
             var testUIOSettings = {
-                textSize: 1
+                textSize: 1,
+                captions: false,
+                transcripts: false,
+                theme: "default",
+                lineSpacing: 1.6
             };
+
+            var expectedAfASettings = {
+                    "display": {
+                        "screenEnhancement": {  // "foregroundColor" & "backgroundColor" are removed
+                            "magnification": 2.0,  // the old AfA setting is preserved
+                            "tracking": "mouse",
+                            "fontSize": 20,  // the new UIO setting takes precedence
+                            "applications":[{  // "applications" array is merged
+                                "name": "GNOME Shell Magnifier",
+                                "id": "org.gnome.desktop.a11y.magnifier",
+                                "priority": "100",
+                                "parameters": {
+                                    "show-cross-hairs": "true"
+                                }
+                            }, {
+                                "parameters": {
+                                "lineSpacing": "1.6"
+                            },
+                            "name": "UI Options",
+                            "id": "fluid.uiOptions"
+                        }]
+                        }
+                    },
+                    "content": {
+                        "adaptationPreference": [{}, {}]  // the new UIO setting takes precedence
+                    }
+                };
 
             var convertedUIOSettings = theStore.AfAtoUIO(testAfASettings);
             jqUnit.assertDeepEq("Supported AfA setting fontSize is converted", 0.5, convertedUIOSettings.textSize);
             
             var finalAfASettings = theStore.UIOtoAfA(testUIOSettings);
-            jqUnit.assertEquals("Unsupported AfA settings are preserved", testAfASettings.display.screenEnhancement.magnification, finalAfASettings.display.screenEnhancement.magnification);
-            jqUnit.assertEquals("Unsupported AfA settings are preserved", testAfASettings.display.screenEnhancement.tracking, finalAfASettings.display.screenEnhancement.tracking);
-            jqUnit.assertEquals("The new UIO setting for fontSize takes precedence", 20, finalAfASettings.display.screenEnhancement.fontSize);
+            jqUnit.assertDeepEq("The converted AfA settings are expected", expectedAfASettings, finalAfASettings);
         });
 
         tests.test("Extra UIO settings preserved", function () {
@@ -575,6 +622,13 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
 
             var uioResult = theStore.AfAtoUIO(testAfASettingsAll);
             jqUnit.assertDeepEq("The converted UIO preferences are expected", testUIOSettingsAll, uioResult);
+        });
+
+        tests.test("Integration test: UIO to AfA", function () {
+            var theStore = fluid.afaStore();
+
+            var afaResult = theStore.UIOtoAfA(testUIOSettingsAll);
+            jqUnit.assertDeepEq("The converted UIO preferences are expected", testAfASettingsAll, afaResult);
         });
     });
 })(jQuery);
