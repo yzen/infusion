@@ -182,11 +182,11 @@ var fluid_1_5 = fluid_1_5 || {};
     
     
     // unsupported, NON-API function
-    fluid.model.applyStrategy = function (strategy, root, segment, index) {
+    fluid.model.applyStrategy = function (strategy, root, segment, path) {
         if (typeof (strategy) === "function") { 
-            return strategy(root, segment, index);
+            return strategy(root, segment, path);
         } else if (strategy && strategy.next) {
-            return strategy.next(root, segment, index);
+            return strategy.next(root, segment, path);
         }
     };
     
@@ -207,8 +207,9 @@ var fluid_1_5 = fluid_1_5 || {};
         that.trundle = function (EL, uncess) {
             uncess = uncess || 0;
             var newThat = fluid.model.makeTrundler(that.root, config, that.strategies);
-            newThat.segs = fluid.model.parseEL(EL);
+            newThat.segs = config.parser? config.parser(EL) : fluid.model.parseEL(EL);
             newThat.index = 0;
+            newThat.path = "";
             newThat.step(newThat.segs.length - uncess);
             return newThat;
         };
@@ -217,8 +218,12 @@ var fluid_1_5 = fluid_1_5 || {};
                 return;
             }
             var accepted;
+            // TODO: Temporary adjustment before trundlers are destroyed by FLUID-4705
+            // In the final system "new strategies" should be able to declare whether any of them
+            // require this path computed or not
+            that.path = fluid.model.composePath(that.path, that.segs[that.index]);
             for (var i = 0; i < that.strategies.length; ++i) {
-                var value = fluid.model.applyStrategy(that.strategies[i], that.root, that.segs[that.index], that.index);
+                var value = fluid.model.applyStrategy(that.strategies[i], that.root, that.segs[that.index], that.path);
                 if (accepted === undefined) {
                     accepted = value;
                 }
@@ -306,7 +311,7 @@ var fluid_1_5 = fluid_1_5 || {};
             else {
                 escaped = false;
                 if (segment !== null) {
-                    accept += c;
+                    segment += c;
                 }
             }
         }
@@ -329,8 +334,7 @@ var fluid_1_5 = fluid_1_5 || {};
   
     fluid.pathUtil.getFromHeadPath = function (path) {
         var firstdot = getPathSegmentImpl(null, path, 0);
-        return firstdot === path.length ? null
-            : path.substring(firstdot + 1);
+        return firstdot === path.length ? "" : path.substring(firstdot + 1);
     };
     
     function lastDotIndex(path) {
@@ -340,13 +344,25 @@ var fluid_1_5 = fluid_1_5 || {};
     
     fluid.pathUtil.getToTailPath = function (path) {
         var lastdot = lastDotIndex(path);
-        return lastdot === -1 ? null : path.substring(0, lastdot);
+        return lastdot === -1 ? "" : path.substring(0, lastdot);
     };
 
   /** Returns the very last path component of a bean path */
     fluid.pathUtil.getTailPath = function (path) {
         var lastdot = lastDotIndex(path);
         return fluid.pathUtil.getPathSegment(path, lastdot + 1);
+    };
+
+    fluid.pathUtil.parseEL = function (path) {
+        var togo = [];
+        var index = 0;
+        var limit = path.length;
+        while (index < limit) {
+            var firstdot = getPathSegmentImpl(globalAccept, path, index);
+            togo.push(globalAccept[0]);
+            index = firstdot + 1;
+        }
+        return togo;
     };
     
     var composeSegment = function (prefix, toappend) {
@@ -360,6 +376,10 @@ var fluid_1_5 = fluid_1_5 || {};
         return prefix;
     };
     
+    fluid.pathUtil.escapeSegment = function (segment) {
+        return composeSegment("", segment);  
+    };
+    
     /**
      * Compose a prefix and suffix EL path, where the prefix is already escaped.
      * Prefix may be empty, but not null. The suffix will become escaped.
@@ -369,11 +389,24 @@ var fluid_1_5 = fluid_1_5 || {};
             prefix += '.';
         }
         return composeSegment(prefix, suffix);
-    };    
+    };
+    
+    /** Determines whether a particular EL path matches a given path specification.
+     * The specification consists of a path with optional wildcard segments represented by "*".
+     * @param spec (string) The specification to be matched
+     * @param path (string) The path to be tested
+     * @param exact (boolean) Whether the path must exactly match the length of the specification in
+     * terms of path segments in order to count as match. If exact is falsy, short specifications will
+     * match all longer paths as if they were padded out with "*" segments 
+     * @return (string) The path which matched the specification, or <code>null</code> if there was no match
+     */
    
-    fluid.pathUtil.matchPath = function (spec, path) {
+    fluid.pathUtil.matchPath = function (spec, path, exact) {
         var togo = "";
         while (true) {
+            if (((path === "") ^ (spec === "")) && exact) {
+                return null;
+            }
             // FLUID-4625 - symmetry on spec and path is actually undesirable, but this
             // quickly avoids at least missed notifications - improved (but slower) 
             // implementation should explode composite changes
