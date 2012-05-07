@@ -126,7 +126,7 @@ var fluid_1_5 = fluid_1_5 || {};
         },
         events: {
             modelChanged: null
-        },
+        }
     });
     
     // This will be removed once the jQuery UI slider has built in ARIA 
@@ -298,7 +298,7 @@ var fluid_1_5 = fluid_1_5 || {};
                 toDelete.push({source: source, value: value});
             }
         });
-        fluid.each(toDelete, function(elem) {
+        fluid.each(toDelete, function (elem) {
             appliers[2].requestChange(elem.source, elem.value, "DELETE");
         });
         return opRecs;
@@ -459,7 +459,7 @@ var fluid_1_5 = fluid_1_5 || {};
         model: "{uiOptions}.model",
         applier: "{uiOptions}.applier",
         events: {
-            onUIOptionsRefresh: "{uiOptions}.events.onUIOptionsRefresh",
+            onUIOptionsRefresh: "{uiOptions}.events.onUIOptionsRefresh"
         },
         listeners: {
             onUIOptionsRefresh: "{that}.refreshView",     
@@ -469,7 +469,7 @@ var fluid_1_5 = fluid_1_5 || {};
             }
         },
         preInitFunction: "fluid.uiOptions.lateRefreshViewBinder",
-        finalInitFunction: "fluid.uiOptions.controlsFinalInit",
+        finalInitFunction: "fluid.uiOptions.controlsFinalInit"
     });
 
     /**
@@ -489,8 +489,7 @@ var fluid_1_5 = fluid_1_5 || {};
                 container: "{uiOptions}.dom.textControls",
                 createOnEvent: "onUIOptionsMarkupReady",
                 options: {
-                    classnameMap: "{uiEnhancer}.options.classnameMap",
-
+                    classnameMap: "{uiEnhancer}.options.classnameMap"
                 }
             },
             layoutControls: {
@@ -498,7 +497,7 @@ var fluid_1_5 = fluid_1_5 || {};
                 container: "{uiOptions}.dom.layoutControls",
                 createOnEvent: "onUIOptionsMarkupReady",
                 options: {
-                    classnameMap: "{uiEnhancer}.options.classnameMap",
+                    classnameMap: "{uiEnhancer}.options.classnameMap"
                 }
             },
             linksControls: {
@@ -506,7 +505,7 @@ var fluid_1_5 = fluid_1_5 || {};
                 container: "{uiOptions}.dom.linksControls",
                 createOnEvent: "onUIOptionsMarkupReady",
                 options: {
-                    classnameMap: "{uiEnhancer}.options.classnameMap",
+                    classnameMap: "{uiEnhancer}.options.classnameMap"
                 }
             },
             preview: {
@@ -537,10 +536,10 @@ var fluid_1_5 = fluid_1_5 || {};
             onUIOptionsRefresh: null,
             onUIOptionsMarkupReady: null,
             onUIOptionsComponentReady: null,
-            contributeDefaultModel: null,
+            contributeDefaultModel: null
         },
         listeners: {
-            onAutoSave: "{that}.save",  
+            onAutoSave: "{that}.save"
         },
         preInitFunction: "fluid.uiOptions.preInit",
         finalInitFunction: "fluid.uiOptions.finalInit",
@@ -675,7 +674,7 @@ var fluid_1_5 = fluid_1_5 || {};
             that.applier.requestChange("labelMap." + key, {
                 values: that.options.controlValues[key],
                 names: that.options.strings[key],
-                classes: fluid.get(that, "options.classnameMap."+key)
+                classes: fluid.get(that, "options.classnameMap." + key)
             });
         });
     };
@@ -747,7 +746,7 @@ var fluid_1_5 = fluid_1_5 || {};
             textFont: "default",          // key from classname map
             theme: "default",             // key from classname map
             textSize: 1,                  // in points
-            lineSpacing: 1,               // in ems
+            lineSpacing: 1                // in ems
         },
         strings: {
             textFont: ["Default", "Times New Roman", "Comic Sans", "Arial", "Verdana"],
@@ -823,7 +822,7 @@ var fluid_1_5 = fluid_1_5 || {};
         gradeNames: ["fluid.uiOptions.ant", "autoInit"],
         defaultModel: {
             layout: false,                // boolean
-            toc: false,                   // boolean
+            toc: false                   // boolean
         },
         selectors: {
             layout: ".flc-uiOptions-layout",
