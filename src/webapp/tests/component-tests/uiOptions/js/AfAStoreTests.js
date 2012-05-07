@@ -33,16 +33,30 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             lineSpacing: 1.4,
             toc: true,
             links: true,
-            inputsLarger: true,
             layout: true,
             captions: true,
             transcripts: true,
             language: "fr",
-            volume: 42
+            volume: 42,
+            inputsLarger: true
         };
 
         // An AfA settings object will not necessarily contain all of these preferences
         var testAfASettingsAll = {
+            control: {
+                structuralNavigation: {
+                    tableOfContents: true
+                }
+            },
+            content: {
+                adaptationPreference: [{
+                    adaptationType: "caption",
+                    language: "fr"
+                }, {
+                    representationForm: ["transcript"],
+                    language: "fr"
+                }]
+            },
             // we'll need to preserve unsupported settings (e.g. magnification)
             display: {
                 screenEnhancement: {
@@ -58,28 +72,14 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                         parameters: {
                             lineSpacing: "1.4",
                             links: true,
-                            inputsLarger: true,
                             layout: true,
-                            volume: "42"
+                            volume: "42",
+                            inputsLarger: true
                         },
                         name: "UI Options",
                         id: "fluid.uiOptions"
                     }]
                 }
-            },
-            control: {
-                structuralNavigation: {
-                    tableOfContents: true
-                }
-            },
-            content: {
-                adaptationPreference: [{
-                    adaptationType: "caption",
-                    language: "fr"
-                }, {
-                    representationForm: ["transcript"],
-                    language: "fr"
-                }]
             }
         };
 /**
@@ -569,7 +569,6 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                         "screenEnhancement": {  // "foregroundColor" & "backgroundColor" are removed
                             "magnification": 2.0,  // the old AfA setting is preserved
                             "tracking": "mouse",
-                            "fontSize": 20,  // the new UIO setting takes precedence
                             "applications":[{  // "applications" array is merged
                                 "name": "GNOME Shell Magnifier",
                                 "id": "org.gnome.desktop.a11y.magnifier",
@@ -583,7 +582,8 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                             },
                             "name": "UI Options",
                             "id": "fluid.uiOptions"
-                        }]
+                            }],
+                            "fontSize": 20  // the new UIO setting takes precedence
                         }
                     },
                     "content": {

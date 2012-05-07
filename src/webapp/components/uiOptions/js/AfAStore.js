@@ -81,18 +81,21 @@ var fluid_1_5 = fluid_1_5 || {};
         // Save the original AfA settings in order to preserve UIO unsupported AfA preferences
         that.originalAfAPrefs = fluid.copy(settings);
         
-        return fluid.model.transformWithRules(settings, [
-            fluid.afaStore.AfAtoUIOScreenEnhanceRules,
-            fluid.afaStore.AfAtoUIOAdaptPrefRules,
-            fluid.afaStore.AfAtoUIOrules
-        ]);
+        var interSetting1 = fluid.model.transformWithRules(settings, fluid.afaStore.AfAtoUIOScreenEnhanceRules);
+        var interSetting2 = fluid.model.transformWithRules(interSetting1, fluid.afaStore.AfAtoUIOAdaptPrefRules);
+        var finalSetting = fluid.model.transformWithRules(interSetting2, fluid.afaStore.AfAtoUIOrules);
+        
+        return finalSetting;
     };
     
     fluid.afaStore.UIOtoAfA = function (settings, that) {
-        var UIOTransformedSettings = fluid.model.transformWithRules(settings, [
-            fluid.afaStore.UIOtoAfArules,
-            fluid.afaStore.UIOtoAfAUIOApprules
-        ]);
+        var schema = {
+                "display.screenEnhancement.applications": "array",
+                "content.adaptationPreference": "array"
+            };
+
+        var interSetting1 = fluid.model.transformWithRules(settings, fluid.afaStore.UIOtoAfArules, {flatSchema: schema});
+        var UIOTransformedSettings = fluid.model.transformWithRules(interSetting1, fluid.afaStore.UIOtoAfAUIOApprules);
         
         // Preserve the AfA preferences that are not UIO supported
         if (that.originalAfAPrefs) {
@@ -105,39 +108,20 @@ var fluid_1_5 = fluid_1_5 || {};
                     var segs = key.split("."),
                         thisKey = segs.pop();
                     
-//                    if (isNaN(parseInt(thisKey))) {
-                        // delete an object
-                        delete fluid.get(target, segs.join("."))[thisKey];
-//                    } else {
-//                        // delete array element
-//                        fluid.get(target, segs.join(".")).splice(parseInt(thisKey), 1);
-//                    }
+                    // delete an object
+                    delete fluid.get(target, segs.join("."))[thisKey];
                 }
             });
             
             fluid.merge({
-//                "content.adaptationPreference": fluid.afaStore.mergeArray,
                 "display.screenEnhancement.applications": fluid.afaStore.mergeApps
             }, target, UIOTransformedSettings);
             return target;
         } else {
-//            return fluid.merge({
-//                "content.adaptationPreference": fluid.afaStore.mergeArray,
-//                "display.screenEnhancement.applications": fluid.afaStore.mergeApps
-//            }, {}, UIOTransformedSettings);
             return UIOTransformedSettings;
         }
     };
     
-    
-//    fluid.afaStore.mergeArray = function (target, source) {
-//        target = target || [];
-//        
-//        fluid.each(source, function (oneSource) {
-//            target.push(oneSource);
-//        });
-//        return target;
-//    };
     
     fluid.afaStore.mergeApps = function (target, source) {
         target = target || [];
@@ -165,31 +149,17 @@ var fluid_1_5 = fluid_1_5 || {};
     fluid.registerNamespace("fluid.afaStore.transform");
 
     /**
-     * convert a string value into one of several possible path-value pairs.
-     * 'valueMap' maps the string value to the path/value.
-     * Note that the value may be an object.
-     * NOTE: This does not yet handle recursion or special cases
-     */
-    fluid.afaStore.transform.valueMapper = function (model, expandSpec, recurse) {
-        var val = fluid.get(model, expandSpec.path);
-        
-        if (typeof val !== "undefined") {
-            return expandSpec.valueMap[val];
-        }
-    };
-    
-    /**
      * Produce a caption AfA adaptationPreference object.
      * This transformer assumes knowledge of the "language" path in the source model.
      */
-    fluid.afaStore.transform.afaCaption = function (model, expandSpec, recurse) {
-        var cap = fluid.get(model, expandSpec.path);
+    fluid.afaStore.transform.afaCaption = function (expanded, expander, expandSpec) {
+        var cap = fluid.get(expander.source, expandSpec.inputPath);
         if (!cap) {
             return {};
         }
         return {
             adaptationType: "caption",
-            language: fluid.get(model, "language")
+            language: fluid.get(expander.source, "language")
         };
     };
 
@@ -197,22 +167,22 @@ var fluid_1_5 = fluid_1_5 || {};
      * Produce a transcript AfA adaptationPreference object.
      * This transformer assumes knowledge of the "language" path in the source model.
      */
-    fluid.afaStore.transform.afaTranscript = function (model, expandSpec, recurse) {
-        var tran = fluid.get(model, expandSpec.path);
+    fluid.afaStore.transform.afaTranscript = function (expanded, expander, expandSpec) {
+        var tran = fluid.get(expander.source, expandSpec.inputPath);
         if (!tran) {
             return {};
         }
         return {
             representationForm: ["transcript"],
-            language: fluid.get(model, "language")
+            language: fluid.get(expander.source, "language")
         };
     };
     
     /**
      * Intermediate process: flatten the array of adaptationPreferences
      */
-    fluid.afaStore.transform.flattenAdaptPrefs = function (model, expandSpec, recurse) {
-        var adaptPrefs = fluid.get(model, expandSpec.path);
+    fluid.afaStore.transform.flattenAdaptPrefs = function (expanded, expander, expandSpec) {
+        var adaptPrefs = fluid.get(expander.source, expandSpec.inputPath);
         if (!adaptPrefs) {
             return {};
         }
@@ -234,8 +204,8 @@ var fluid_1_5 = fluid_1_5 || {};
     /**
      * Intermediate process: remove the screenEnhancement applications that are not UIO specific
      */
-    fluid.afaStore.transform.simplifyScreenEnhance = function (model, expandSpec, recurse) {
-        var val = fluid.get(model, expandSpec.path);
+    fluid.afaStore.transform.simplifyScreenEnhance = function (expanded, expander, expandSpec) {
+        var val = fluid.get(expander.source, expandSpec.inputPath);
         if (!val) {
             return {};
         }
@@ -267,8 +237,8 @@ var fluid_1_5 = fluid_1_5 || {};
     /**
      * 
      */
-    fluid.afaStore.transform.fontFactor = function (model, expandSpec, recurse) {
-        var val = fluid.get(model, expandSpec.path);
+    fluid.afaStore.transform.fontFactor = function (expanded, expander, expandSpec) {
+        var val = fluid.get(expander.source, expandSpec.inputPath);
         if (!val) {
             return {};
         }
@@ -277,10 +247,10 @@ var fluid_1_5 = fluid_1_5 || {};
     };
 
     /**
-     * 
+     * Converts UIO fontSize setting to AfA
      */
-    fluid.afaStore.transform.fontSize = function (model, expandSpec, recurse) {
-        var val = fluid.get(model, expandSpec.path);
+    fluid.afaStore.transform.fontSize = function (expanded, expander, expandSpec) {
+        var val = fluid.get(expander.source, expandSpec.inputPath);
         if (!val) {
             return {};
         }
@@ -304,9 +274,9 @@ var fluid_1_5 = fluid_1_5 || {};
      * Convert a foreground/background colour combination into a theme name.
      * Assumptions: If one of the colours is not specified, we cannot identify a theme.
      */
-    fluid.afaStore.transform.coloursToTheme = function (model, expandSpec, recurse) {
-        var fg = fluid.get(model, expandSpec.fgpath);
-        var bg = fluid.get(model, expandSpec.bgpath);
+    fluid.afaStore.transform.coloursToTheme = function (expanded, expander, expandSpec) {
+        var fg = fluid.get(expander.source, expandSpec.fgpath);
+        var bg = fluid.get(expander.source, expandSpec.bgpath);
         if (colourTable[fg]) {
             return colourTable[fg][bg];
         }
@@ -316,8 +286,8 @@ var fluid_1_5 = fluid_1_5 || {};
      * Convert a foreground/background colour combination into a theme name.
      * Assumptions: If one of the colours is not specified, we cannot identify a theme.
      */
-    fluid.afaStore.transform.strToNum = function (model, expandSpec, recurse) {
-        var val = fluid.get(model, expandSpec.path);
+    fluid.afaStore.transform.strToNum = function (expanded, expander, expandSpec) {
+        var val = fluid.get(expander.source, expandSpec.inputPath);
         if (typeof (val) !== "undefined") {
             return parseFloat(val);
         }
@@ -326,8 +296,8 @@ var fluid_1_5 = fluid_1_5 || {};
     /**
      * Convert AfA-unsupported UIO settings into AfA preference string.
      */
-    fluid.afaStore.transform.afaUnSupportedUIOSettings = function (model, expandSpec, recurse) {
-        var val = fluid.get(model, expandSpec.path);
+    fluid.afaStore.transform.afaUnSupportedUIOSettings = function (expanded, expander, expandSpec) {
+        var val = fluid.get(expander.source, expandSpec.inputPath);
         if (!val && val !== false) {
             return;
         }
@@ -338,8 +308,8 @@ var fluid_1_5 = fluid_1_5 || {};
     /**
      * Complete the node for preserving AfA-unsupported UIO settings
      */
-    fluid.afaStore.transform.fleshOutUIOSettings = function (model, expandSpec, recurse) {
-        var fullVal = fluid.get(model, expandSpec.path);
+    fluid.afaStore.transform.fleshOutUIOSettings = function (expanded, expander, expandSpec) {
+        var fullVal = fluid.get(expander.source, expandSpec.inputPath);
         var val = fluid.get(fullVal, "screenEnhancement.applications.0.parameters");
         if (!val) {
             return fullVal;
@@ -351,58 +321,53 @@ var fluid_1_5 = fluid_1_5 || {};
         return fullVal;
     };
 
-    fluid.afaStore.transform.createAppsArray = function (model, expandSpec) {
-//        fluid.set(model, "display.screenEnhancement.applications", []);
-        return [];
-    };
-    
     /**********************************************
      * Transformation Rules
      **********************************************/
 
     fluid.afaStore.AfAtoUIOrules = {
-        "textFont": {
-            "expander": {
-                "type": "fluid.afaStore.transform.valueMapper",
-                "path": "display.screenEnhancement.fontFace.genericFontFace",
-                "_comment": "TODO: For now, this ignores the actual 'fontName' setting",
-                "valueMap": {
-                    "serif": "times",
-                    "sans serif": "verdana",
-                    "monospaced": "default",
-                    "fantasy": "default",
-                    "cursive": "default"
-                }
-            }
-        },
+//        "textFont": {
+//            "expander": {
+//                "type": "fluid.model.transform.valueMapper",
+//                "inputPath": "display.screenEnhancement.fontFace.genericFontFace",
+//                "_comment": "TODO: For now, this ignores the actual 'fontName' setting",
+//                "options": {
+//                    "serif": "times",
+//                    "sans serif": "verdana",
+//                    "monospaced": "default",
+//                    "fantasy": "default",
+//                    "cursive": "default"
+//                }
+//            }
+//        },
         "textSize": {
             "expander": {
                 "type": "fluid.afaStore.transform.fontFactor",
-                "path": "display.screenEnhancement.fontSize"
+                "inputPath": "display.screenEnhancement.fontSize"
             }
         },
         "toc": {
             "expander": {
                 "type": "fluid.model.transform.value",
-                "path": "control.structuralNavigation.tableOfContents"
+                "inputPath": "control.structuralNavigation.tableOfContents"
             }
         },
         "captions": {
             "expander": {
                 "type": "fluid.model.transform.value",
-                "path": "flatAdaptationPreferences.captions"
+                "inputPath": "flatAdaptationPreferences.captions"
             }
         },
         "transcripts": {
             "expander": {
                 "type": "fluid.model.transform.value",
-                "path": "flatAdaptationPreferences.transcripts"
+                "inputPath": "flatAdaptationPreferences.transcripts"
             }
         },
         "language": {
             "expander": {
                 "type": "fluid.model.transform.value",
-                "path": "flatAdaptationPreferences.language"
+                "inputPath": "flatAdaptationPreferences.language"
             }
         },
         "theme": {
@@ -415,7 +380,7 @@ var fluid_1_5 = fluid_1_5 || {};
         "lineSpacing": {
             "expander": {
                 "type": "fluid.afaStore.transform.strToNum",
-                "path": "display.screenEnhancement.applications.0.parameters.lineSpacing"
+                "inputPath": "display.screenEnhancement.applications.0.parameters.lineSpacing"
             }
         },
         "links": "display.screenEnhancement.applications.0.parameters.links",
@@ -424,7 +389,7 @@ var fluid_1_5 = fluid_1_5 || {};
         "volume": {
             "expander": {
                 "type": "fluid.afaStore.transform.strToNum",
-                "path": "display.screenEnhancement.applications.0.parameters.volume"
+                "inputPath": "display.screenEnhancement.applications.0.parameters.volume"
             }
         }
     };
@@ -433,7 +398,7 @@ var fluid_1_5 = fluid_1_5 || {};
         "flatAdaptationPreferences": {
             "expander": {
                 "type": "fluid.afaStore.transform.flattenAdaptPrefs",
-                "path": "content.adaptationPreference"
+                "inputPath": "content.adaptationPreference"
             }
         },
         "display": "display",
@@ -444,7 +409,7 @@ var fluid_1_5 = fluid_1_5 || {};
         "display.screenEnhancement": {
             "expander": {
                 "type": "fluid.afaStore.transform.simplifyScreenEnhance",
-                "path": "display.screenEnhancement"
+                "inputPath": "display.screenEnhancement"
             }
         },
         "content": "content",
@@ -452,107 +417,107 @@ var fluid_1_5 = fluid_1_5 || {};
     };
 
     fluid.afaStore.UIOtoAfArules = {
-        "display.screenEnhancement.fontFace": {
-            "expander": {
-                "type": "fluid.afaStore.transform.valueMapper",
-                "path": "textFont",
-                "valueMap": {
-                    "times": {
-                        "fontName": ["Times New Roman"],
-                        "genericFontFace": "serif"
-                    },
-                    "verdana": {
-                        "fontName": ["Verdana"],
-                        "genericFontFace": "sans serif"
-                    },
-                    "arial": {
-                        "fontName": ["Arial"],
-                        "genericFontFace": "sans serif"
-                    },
-                    "comic": {
-                        "fontName": ["Comic Sans"],
-                        "genericFontFace": "sans serif"
-                    }
-                }
-            }
-        },
+//        "display.screenEnhancement.fontFace": {
+//            "expander": {
+//                "type": "fluid.model.transform.valueMapper",
+//                "inputPath": "textFont",
+//                "options": {
+//                    "times": {
+//                        "fontName": ["Times New Roman"],
+//                        "genericFontFace": "serif"
+//                    },
+//                    "verdana": {
+//                        "fontName": ["Verdana"],
+//                        "genericFontFace": "sans serif"
+//                    },
+//                    "arial": {
+//                        "fontName": ["Arial"],
+//                        "genericFontFace": "sans serif"
+//                    },
+//                    "comic": {
+//                        "fontName": ["Comic Sans"],
+//                        "genericFontFace": "sans serif"
+//                    }
+//                }
+//            }
+//        },
         "display.screenEnhancement.fontSize": {
             "expander": {
                 "type": "fluid.afaStore.transform.fontSize",
-                "path": "textSize"
+                "inputPath": "textSize"
             }
         },
         "control.structuralNavigation.tableOfContents": {
             "expander": {
                 "type": "fluid.model.transform.value",
-                "path": "toc"
+                "inputPath": "toc"
             }
         },
         "_comment": "NB: This will always place transcripts second in the array, even if there are no captions",
-        "content.adaptationPreference.1": {
-            "expander": {
-                "type": "fluid.afaStore.transform.afaTranscript",
-                "path": "transcripts"
-            }
-        },
         "content.adaptationPreference.0": {
             "expander": {
                 "type": "fluid.afaStore.transform.afaCaption",
-                "path": "captions"
+                "inputPath": "captions"
             }
         },
-        "display.screenEnhancement.foregroundColor": {
+        "content.adaptationPreference.1": {
             "expander": {
-                "type": "fluid.afaStore.transform.valueMapper",
-                "path": "theme",
-                "valueMap": {
-                    "yb": "yellow",
-                    "by": "black",
-                    "wb": "white",
-                    "bw": "black"
-                }
+                "type": "fluid.afaStore.transform.afaTranscript",
+                "inputPath": "transcripts"
             }
         },
-        "display.screenEnhancement.backgroundColor": {
-            "expander": {
-                "type": "fluid.afaStore.transform.valueMapper",
-                "path": "theme",
-                "valueMap": {
-                    "yb": "black",
-                    "by": "yellow",
-                    "wb": "black",
-                    "bw": "white"
-                }
-            }
-        },
+//        "display.screenEnhancement.foregroundColor": {
+//            "expander": {
+//                "type": "fluid.model.transform.valueMapper",
+//                "inputPath": "theme",
+//                "options": {
+//                    "yb": "yellow",
+//                    "by": "black",
+//                    "wb": "white",
+//                    "bw": "black"
+//                }
+//            }
+//        },
+//        "display.screenEnhancement.backgroundColor": {
+//            "expander": {
+//                "type": "fluid.model.transform.valueMapper",
+//                "inputPath": "theme",
+//                "options": {
+//                    "yb": "black",
+//                    "by": "yellow",
+//                    "wb": "black",
+//                    "bw": "white"
+//                }
+//            }
+//        },
         "display.screenEnhancement.applications.0.parameters.lineSpacing": {
             "expander": {
                 "type": "fluid.afaStore.transform.afaUnSupportedUIOSettings",
-                "path": "lineSpacing"
+                "inputPath": "lineSpacing"
             }
         },
         "display.screenEnhancement.applications.0.parameters.links": {
             "expander": {
                 "type": "fluid.afaStore.transform.afaUnSupportedUIOSettings",
-                "path": "links"
+                "inputPath": "links"
             }
         },
         "display.screenEnhancement.applications.0.parameters.inputsLarger": {
             "expander": {
                 "type": "fluid.afaStore.transform.afaUnSupportedUIOSettings",
-                "path": "inputsLarger"
+                "inputPath": "inputsLarger"
             }
         },
         "display.screenEnhancement.applications.0.parameters.layout": {
             "expander": {
                 "type": "fluid.afaStore.transform.afaUnSupportedUIOSettings",
-                "path": "layout"
+                "inputPath": "layout"
             }
         },
         "display.screenEnhancement.applications.0.parameters.volume": {
             "expander": {
                 "type": "fluid.afaStore.transform.afaUnSupportedUIOSettings",
-                "path": "volume"
+                "inputPath": "volume"
             }
         }
     };
@@ -563,7 +528,7 @@ var fluid_1_5 = fluid_1_5 || {};
         "display": {
             "expander": {
                 "type": "fluid.afaStore.transform.fleshOutUIOSettings",
-                "path": "display"
+                "inputPath": "display"
             }
         }
     };
