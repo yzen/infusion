@@ -536,7 +536,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                         "fontSize": 10,
                         "foregroundColor": "yellow",
                         "backgroundColor": "black",
-                        "applications":[{
+                        "applications": [{
                             "name": "GNOME Shell Magnifier",
                             "id": "org.gnome.desktop.a11y.magnifier",
                             "priority": "100",
@@ -569,7 +569,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                         "screenEnhancement": {  // "foregroundColor" & "backgroundColor" are removed
                             "magnification": 2.0,  // the old AfA setting is preserved
                             "tracking": "mouse",
-                            "applications":[{  // "applications" array is merged
+                            "applications": [{  // "applications" array is merged
                                 "name": "GNOME Shell Magnifier",
                                 "id": "org.gnome.desktop.a11y.magnifier",
                                 "priority": "100",
@@ -578,10 +578,10 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
                                 }
                             }, {
                                 "parameters": {
-                                "lineSpacing": "1.6"
-                            },
-                            "name": "UI Options",
-                            "id": "fluid.uiOptions"
+                                    "lineSpacing": "1.6"
+                                },
+                                "name": "UI Options",
+                                "id": "fluid.uiOptions"
                             }],
                             "fontSize": 20  // the new UIO setting takes precedence
                         }
