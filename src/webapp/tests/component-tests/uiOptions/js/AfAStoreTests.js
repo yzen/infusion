@@ -517,8 +517,7 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
             var testUIOSettings = {
                 lineSpacing: 1.4,
                 layout: true,
-                volume: 42,
-                textSize: {}
+                volume: 42
             };
 
             var convertedUIOSettings = theStore.AfAtoUIO(testAfASettings);
