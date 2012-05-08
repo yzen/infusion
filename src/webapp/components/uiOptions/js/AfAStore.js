@@ -81,21 +81,17 @@ var fluid_1_5 = fluid_1_5 || {};
         // Save the original AfA settings in order to preserve UIO unsupported AfA preferences
         that.originalAfAPrefs = fluid.copy(settings);
         
-        var interSetting1 = fluid.model.transformWithRules(settings, fluid.afaStore.AfAtoUIOScreenEnhanceRules);
-        var interSetting2 = fluid.model.transformWithRules(interSetting1, fluid.afaStore.AfAtoUIOAdaptPrefRules);
-        var finalSetting = fluid.model.transformWithRules(interSetting2, fluid.afaStore.AfAtoUIOrules);
-        
-        return finalSetting;
+        return fluid.model.transform.sequence(settings, [
+                   fluid.afaStore.AfAtoUIOScreenEnhanceRules, 
+                   fluid.afaStore.AfAtoUIOAdaptPrefRules,
+                   fluid.afaStore.AfAtoUIOrules]);
     };
     
     fluid.afaStore.UIOtoAfA = function (settings, that) {
-        var schema = {
-                "display.screenEnhancement.applications": "array",
-                "content.adaptationPreference": "array"
-            };
-
-        var interSetting1 = fluid.model.transformWithRules(settings, fluid.afaStore.UIOtoAfArules, {flatSchema: schema});
-        var UIOTransformedSettings = fluid.model.transformWithRules(interSetting1, fluid.afaStore.UIOtoAfAUIOApprules);
+        var UIOTransformedSettings = fluid.model.transform.sequence(settings, [
+                                         fluid.afaStore.UIOtoAfArules, 
+                                         fluid.afaStore.UIOtoAfAUIOApprules
+                                         ], {flatSchema: fluid.afaStore.UIOtoAfAschema});
         
         // Preserve the AfA preferences that are not UIO supported
         if (that.originalAfAPrefs) {
@@ -418,7 +414,12 @@ var fluid_1_5 = fluid_1_5 || {};
         "content": "content",
         "control": "control"
     };
-
+    
+    fluid.afaStore.UIOtoAfAschema = {
+        "display.screenEnhancement.applications": "array",
+        "content.adaptationPreference": "array"
+    };
+    
     fluid.afaStore.UIOtoAfArules = {
         "display.screenEnhancement.fontFace": {
             "expander": {
