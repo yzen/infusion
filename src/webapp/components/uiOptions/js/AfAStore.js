@@ -326,20 +326,23 @@ var fluid_1_5 = fluid_1_5 || {};
      **********************************************/
 
     fluid.afaStore.AfAtoUIOrules = {
-//        "textFont": {
-//            "expander": {
-//                "type": "fluid.model.transform.valueMapper",
-//                "inputPath": "display.screenEnhancement.fontFace.genericFontFace",
-//                "_comment": "TODO: For now, this ignores the actual 'fontName' setting",
-//                "options": {
-//                    "serif": "times",
-//                    "sans serif": "verdana",
-//                    "monospaced": "default",
-//                    "fantasy": "default",
-//                    "cursive": "default"
-//                }
-//            }
-//        },
+        "textFont": {
+            "expander": {
+                "type": "fluid.model.transform.valueMapper",
+                "inputPath": "display.screenEnhancement.fontFace.genericFontFace",
+                "_comment": "TODO: For now, this ignores the actual 'fontName' setting",
+                "options": {
+                    "serif": "times",
+                    "sans serif": "verdana",
+                    "monospaced": "default",
+                    "fantasy": "default",
+                    "cursive": "default",
+                    "undefined": {
+                        undefinedOutputValue: true,
+                    }
+                }
+            }
+        },
         "textSize": {
             "expander": {
                 "type": "fluid.afaStore.transform.fontFactor",
@@ -417,30 +420,41 @@ var fluid_1_5 = fluid_1_5 || {};
     };
 
     fluid.afaStore.UIOtoAfArules = {
-//        "display.screenEnhancement.fontFace": {
-//            "expander": {
-//                "type": "fluid.model.transform.valueMapper",
-//                "inputPath": "textFont",
-//                "options": {
-//                    "times": {
-//                        "fontName": ["Times New Roman"],
-//                        "genericFontFace": "serif"
-//                    },
-//                    "verdana": {
-//                        "fontName": ["Verdana"],
-//                        "genericFontFace": "sans serif"
-//                    },
-//                    "arial": {
-//                        "fontName": ["Arial"],
-//                        "genericFontFace": "sans serif"
-//                    },
-//                    "comic": {
-//                        "fontName": ["Comic Sans"],
-//                        "genericFontFace": "sans serif"
-//                    }
-//                }
-//            }
-//        },
+        "display.screenEnhancement.fontFace": {
+            "expander": {
+                "type": "fluid.model.transform.valueMapper",
+                "inputPath": "textFont",
+                "options": {
+                    "times": {
+                       "outputValue": {
+                            "fontName": ["Times New Roman"],
+                            "genericFontFace": "serif"
+                        }
+                    },
+                    "verdana": {
+                        "outputValue": {
+                            "fontName": ["Verdana"],
+                            "genericFontFace": "sans serif"
+                        }
+                    },
+                    "arial": {
+                        "outputValue": {
+                            "fontName": ["Arial"],
+                            "genericFontFace": "sans serif"
+                        }
+                    },
+                    "comic": {
+                        "outputValue": {
+                            "fontName": ["Comic Sans"],
+                            "genericFontFace": "sans serif"
+                    }
+                    },
+                    "undefined": {
+                        undefinedOutputValue: true,
+                    }
+                }
+            }
+        },
         "display.screenEnhancement.fontSize": {
             "expander": {
                 "type": "fluid.afaStore.transform.fontSize",
@@ -466,30 +480,36 @@ var fluid_1_5 = fluid_1_5 || {};
                 "inputPath": "transcripts"
             }
         },
-//        "display.screenEnhancement.foregroundColor": {
-//            "expander": {
-//                "type": "fluid.model.transform.valueMapper",
-//                "inputPath": "theme",
-//                "options": {
-//                    "yb": "yellow",
-//                    "by": "black",
-//                    "wb": "white",
-//                    "bw": "black"
-//                }
-//            }
-//        },
-//        "display.screenEnhancement.backgroundColor": {
-//            "expander": {
-//                "type": "fluid.model.transform.valueMapper",
-//                "inputPath": "theme",
-//                "options": {
-//                    "yb": "black",
-//                    "by": "yellow",
-//                    "wb": "black",
-//                    "bw": "white"
-//                }
-//            }
-//        },
+        "display.screenEnhancement.foregroundColor": {
+            "expander": {
+                "type": "fluid.model.transform.valueMapper",
+                "inputPath": "theme",
+                "options": {
+                    "yb": "yellow",
+                    "by": "black",
+                    "wb": "white",
+                    "bw": "black",
+                    "undefined": {
+                        undefinedOutputValue: true,
+                    }
+                }
+            }
+        },
+        "display.screenEnhancement.backgroundColor": {
+            "expander": {
+                "type": "fluid.model.transform.valueMapper",
+                "inputPath": "theme",
+                "options": {
+                    "yb": "black",
+                    "by": "yellow",
+                    "wb": "black",
+                    "bw": "white",
+                    "undefined": {
+                        undefinedOutputValue: true,
+                    }
+                }
+            }
+        },
         "display.screenEnhancement.applications.0.parameters.lineSpacing": {
             "expander": {
                 "type": "fluid.afaStore.transform.afaUnSupportedUIOSettings",
