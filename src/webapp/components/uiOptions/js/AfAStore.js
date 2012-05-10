@@ -61,6 +61,8 @@ var fluid_1_5 = fluid_1_5 || {};
     });
 
     fluid.afaStore.preInit = function (that) {
+        // This listener will check if there are any outstanding saves pending and will make
+        // at most one additinal save of the latest settings state.
         that.afterSaveHandler = function () {
             if (that.settings) {
                 that.save(that.settings);
@@ -100,10 +102,10 @@ var fluid_1_5 = fluid_1_5 || {};
             dataType: "json",
             success: function (data) {
                 if (!data.error) {
-                    that.events.settingsReady.fire($.extend(true, {},
-                        that.options.defaultSiteSettings, that.AfAtoUIO(data)));
+                    fluid.merge(null, that.originalAfAPrefs, data);
                 }
                 delete that.saving;
+                // Check if there were other attempts to save.
                 that.events.afterSave.fire();
             }
         });
