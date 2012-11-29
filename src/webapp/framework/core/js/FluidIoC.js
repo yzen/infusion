@@ -293,6 +293,7 @@ var fluid_1_5 = fluid_1_5 || {};
         that.clearComponent = function(component, name, child, options, noModTree) {
             options = options || {visited: {}, flat: true};
             child = child || component[name];
+            fluid.fireEvent(fluid.get(child, "options.clearFunction"), child);
             fluid.visitComponentChildren(child, function(gchild, gchildname) {
                 that.clearComponent(child, gchildname, null, options, noModTree);
             }, options);
