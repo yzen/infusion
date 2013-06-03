@@ -79,6 +79,9 @@ var fluid_1_5 = fluid_1_5 || {};
     
     fluid.defaults("fluid.uiEnhancer", {
         gradeNames: ["fluid.viewComponent", "autoInit"],
+        changeApplierOptions: {
+            cullUnchanged: true
+        },
         components: {
             settingsStore: {
                 type: "fluid.uiOptions.store",
@@ -287,5 +290,34 @@ var fluid_1_5 = fluid_1_5 || {};
     fluid.demands("fluid.uiOptions.store", ["fluid.uiEnhancer"], {
         funcName: "fluid.cookieStore"
     });
-    
+
+    /*******************************************************************************
+     * observer
+     *
+     * A grade to be used by the integrators, that would like to listen to the
+     * specific settings model changes.
+     *******************************************************************************/
+    fluid.defaults("fluid.uiEnhancer.observer", {
+        gradeNames: ["autoInit", "fluid.littleComponent"],
+        path: "",
+        invokers: {
+            addListener: {
+                funcName: "fluid.uiEnhancer.observer.addListener",
+                args: ["{uiEnhancer}.applier.modelChanged.addListener", "{that}.options.path", "{arguments}.0"]
+            },
+            removeListener: {
+                funcName: "fluid.uiEnhancer.observer.removeListener",
+                args: ["{uiEnhancer}.applier.modelChanged.removeListener", "{arguments}.0"]
+            }
+        }
+    });
+
+    fluid.uiEnhancer.observer.addListener = function (addListener, path, listener) {
+        addListener(path, listener);
+    };
+
+    fluid.uiEnhancer.observer.removeListener = function (removeListener, listener) {
+        removeListener(listener);
+    };
+
 })(jQuery, fluid_1_5);
