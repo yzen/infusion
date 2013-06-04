@@ -297,27 +297,52 @@ var fluid_1_5 = fluid_1_5 || {};
      * A grade to be used by the integrators, that would like to listen to the
      * specific settings model changes.
      *******************************************************************************/
-    fluid.defaults("fluid.uiEnhancer.observer", {
-        gradeNames: ["autoInit", "fluid.littleComponent"],
-        path: "",
+    fluid.defaults("fluid.modelComponent.observer", {
+        gradeNames: ["autoInit", "fluid.modelComponent", "fluid.eventedComponent"],
+        listeners: {
+            onDestroy: "{that}.removeListeners"
+        },
+        modelListeners: {
+            modelChanged: {},
+            postGuards: {},
+            guards: {}
+        },
         invokers: {
-            addListener: {
-                funcName: "fluid.uiEnhancer.observer.addListener",
-                args: ["{uiEnhancer}.applier.modelChanged.addListener", "{that}.options.path", "{arguments}.0"]
-            },
-            removeListener: {
-                funcName: "fluid.uiEnhancer.observer.removeListener",
-                args: ["{uiEnhancer}.applier.modelChanged.removeListener", "{arguments}.0"]
+            removeListeners: {
+                funcName: "fluid.modelComponent.observer.traverseListeners",
+                args: ["{that}.options.modelListeners", "{that}.applier", "removeListener"]
             }
+        },
+        preInitFunction: {
+            namespace: "preInitModelComponentObserver",
+            listener: "fluid.modelComponent.observer.traverseListeners",
+            args: ["{that}.options.modelListeners", "{that}.applier", "addListener"]
         }
     });
 
-    fluid.uiEnhancer.observer.addListener = function (addListener, path, listener) {
-        addListener(path, listener);
+    fluid.modelComponent.observer.addListener = function (applier, event, listener, path) {
+        listener = fluid.isPrimitive(listener) ? {listener: listener} : listener;
+        applier[event].addListener(path, listener.listener, listener.namespace);
     };
 
-    fluid.uiEnhancer.observer.removeListener = function (removeListener, listener) {
-        removeListener(listener);
+    fluid.modelComponent.observer.removeListener = function (applier, event, listener) {
+        listener = fluid.isPrimitive(listener) ? listener : listener.listener;
+        applier[event].removeListener(listener);
     };
+
+    fluid.modelComponent.observer.traverseListeners = function (modelListeners, applier, processListener) {
+        fluid.each(["modelChanged", "postGuards", "guards"], function (event) {
+            fluid.each(modelListeners[event], function (listeners, path) {
+                fluid.each(fluid.makeArray(listeners), function (listener) {
+                    fluid.modelComponent.observer[processListener](applier, event, listener, path);
+                });
+            })
+        });
+    };
+
+    fluid.defaults("fluid.uiEnhancer.observer", {
+        gradeNames: ["autoInit", "fluid.modelComponent.observer"],
+        applier: "{uiEnhancer}.applier"
+    });
 
 })(jQuery, fluid_1_5);
