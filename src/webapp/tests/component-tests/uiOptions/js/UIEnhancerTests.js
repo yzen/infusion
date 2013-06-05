@@ -269,12 +269,108 @@ https://github.com/fluid-project/infusion/raw/master/Infusion-LICENSE.txt
         }]
     });
 
+    /*******************************************************************************
+     * fluid.uiEnhancer.observer tests.
+     *******************************************************************************/
+    fluid.defaults("fluid.tests.observer", {
+        gradeNames: ["fluid.test.testEnvironment", "autoInit"],
+        components: {
+            uiEnhancer: {
+                type: "fluid.uiEnhancer",
+                container: ".flt-observer"
+            },
+            observer: {
+                type: "fluid.uiEnhancer.observer",
+                options: {
+                    modelListeners: {
+                        modelChanged: {
+                            "testPath1": "fluid.tests.observer.modelChanged1",
+                            "testPath4": ["fluid.tests.observer.modelChanged2",
+                                          "fluid.tests.observer.modelChanged3"]
+                        },
+                        guards: {
+                            "testPath2": "fluid.tests.observer.guards"
+                        },
+                        postGuards: {
+                            "testPath3": "fluid.tests.observer.postGuards"
+                        }
+                    }
+                }
+            },
+            observerTester: {
+                type: "fluid.tests.observerTester"
+            }
+        }
+    });
+
+    fluid.tests.observer.modelChanged1 = function (model, oldModel, changeRequest) {
+        jqUnit.assertUndefined("Old value was not set", oldModel.testPath1);
+        jqUnit.assertEquals("Model is updated correctly", "testPath1New", model.testPath1);
+    };
+    fluid.tests.observer.modelChanged2 = function (model, oldModel, changeRequest) {
+        jqUnit.assertUndefined("Old value was not set", oldModel.testPath4);
+        jqUnit.assertEquals("Model is updated correctly", "testPath4New", model.testPath4);
+    };
+    fluid.tests.observer.modelChanged3 = function (model, oldModel, changeRequest) {
+        jqUnit.assertUndefined("Old value was not set", oldModel.testPath4);
+        jqUnit.assertEquals("Model is updated correctly", "testPath4New", model.testPath4);
+    };
+
+    fluid.tests.observer.guards = function (model, changeRequest, applier) {
+        jqUnit.assertUndefined("Model is still unset", model.testPath2);
+    };
+
+    fluid.tests.observer.postGuards = function (newModel, changeRequest, applier) {
+        jqUnit.assertEquals("New model is now", "testPath3New", newModel.testPath3);
+    };
+
+    fluid.tests.updateTestPath1 = function (applier) {
+        applier.requestChange("testPath1", "testPath1New");
+    };
+
+    fluid.tests.updateTestPath2 = function (applier) {
+        applier.requestChange("testPath2", "testPath2New");
+    };
+
+    fluid.tests.updateTestPath3 = function (applier) {
+        applier.requestChange("testPath3", "testPath3New");
+    };
+
+    fluid.tests.updateTestPath4 = function (applier) {
+        applier.requestChange("testPath4", "testPath4New");
+    };
+
+    fluid.defaults("fluid.tests.observerTester", {
+        gradeNames: ["fluid.test.testCaseHolder", "autoInit"],
+        modules: [{
+            name: "UIEnhancer model change observer tests",
+            tests: [{
+                expect: 8,
+                name: "Track model changes",
+                sequence: [{
+                    func: "fluid.tests.updateTestPath1",
+                    args: "{uiEnhancer}.applier"
+                }, {
+                    func: "fluid.tests.updateTestPath2",
+                    args: "{uiEnhancer}.applier"
+                }, {
+                    func: "fluid.tests.updateTestPath3",
+                    args: "{uiEnhancer}.applier"
+                }, {
+                    func: "fluid.tests.updateTestPath4",
+                    args: "{uiEnhancer}.applier"
+                }]
+            }]
+        }]
+    });
+
     $(document).ready(function () {
         fluid.test.runTests([
             "fluid.tests.customizedActions",
             "fluid.tests.settings",
             "fluid.tests.optionsMunging",
-            "fluid.tests.lineHeightUnit"
+            "fluid.tests.lineHeightUnit",
+            "fluid.tests.observer"
         ]);
     });
 

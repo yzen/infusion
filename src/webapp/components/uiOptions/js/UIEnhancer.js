@@ -300,6 +300,7 @@ var fluid_1_5 = fluid_1_5 || {};
     fluid.defaults("fluid.modelComponent.observer", {
         gradeNames: ["autoInit", "fluid.modelComponent", "fluid.eventedComponent"],
         listeners: {
+            onCreate: "{that}.addListeners",
             onDestroy: "{that}.removeListeners"
         },
         modelListeners: {
@@ -308,25 +309,33 @@ var fluid_1_5 = fluid_1_5 || {};
             guards: {}
         },
         invokers: {
+            addListeners: {
+                funcName: "fluid.modelComponent.observer.traverseListeners",
+                args: ["{that}.options.modelListeners", "{that}.applier", "addListener"]
+            },
             removeListeners: {
                 funcName: "fluid.modelComponent.observer.traverseListeners",
                 args: ["{that}.options.modelListeners", "{that}.applier", "removeListener"]
             }
-        },
-        preInitFunction: {
-            namespace: "preInitModelComponentObserver",
-            listener: "fluid.modelComponent.observer.traverseListeners",
-            args: ["{that}.options.modelListeners", "{that}.applier", "addListener"]
         }
     });
 
     fluid.modelComponent.observer.addListener = function (applier, event, listener, path) {
         listener = fluid.isPrimitive(listener) ? {listener: listener} : listener;
+        if (typeof listener.listener === "string") {
+            listener.listener = fluid.getGlobalValue(listener.listener);
+        }
+        if (event === "postGuards") {
+            path = {path: path, transactional: true};
+        }
         applier[event].addListener(path, listener.listener, listener.namespace);
     };
 
     fluid.modelComponent.observer.removeListener = function (applier, event, listener) {
         listener = fluid.isPrimitive(listener) ? listener : listener.listener;
+        if (typeof listener === "string") {
+            listener = fluid.getGlobalValue(listener);
+        }
         applier[event].removeListener(listener);
     };
 
