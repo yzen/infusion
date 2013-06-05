@@ -325,9 +325,6 @@ var fluid_1_5 = fluid_1_5 || {};
         if (typeof listener.listener === "string") {
             listener.listener = fluid.getGlobalValue(listener.listener);
         }
-        if (event === "postGuards") {
-            path = {path: path, transactional: true};
-        }
         applier[event].addListener(path, listener.listener, listener.namespace);
     };
 
