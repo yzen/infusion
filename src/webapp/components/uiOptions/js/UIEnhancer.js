@@ -82,14 +82,6 @@ var fluid_1_5 = fluid_1_5 || {};
         changeApplierOptions: {
             cullUnchanged: true
         },
-        components: {
-            settingsStore: {
-                type: "fluid.uiOptions.store",
-                options: {
-                    defaultSiteSettings: "{uiEnhancer}.options.defaultSiteSettings"
-                }
-            }
-        },
         invokers: {
             updateModel: {
                 funcName: "fluid.uiEnhancer.updateModel",
